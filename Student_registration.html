@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Registration Form</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            background-color: aqua;
+            text-align: center;
+        }
+        form {
+            max-width: 400px;
+            margin: auto;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Student Registration Form</h2>
+<form id="registrationForm" class="needs-validation" novalidate>
+    <input type="text" id="studentId" class="form-control mb-3" placeholder="Student ID No" required>
+    <input type="text" id="name" class="form-control mb-3" placeholder="Name" required>
+    <input type="email" id="email" class="form-control mb-3" placeholder="Email" required>
+    <input type="password" id="password" class="form-control mb-3" placeholder="Password" required>
+    <input type="tel" id="contactNo" class="form-control mb-3" placeholder="Contact No" required>
+    <select id="course" class="form-control mb-3" required>
+        <option value="">Select Course</option>
+        <option value="Computer Science">Computer Science</option>
+        <option value="Information Technology">Information Technology</option>
+        <option value="Business Administration">Business Administration</option>
+        <option value="Engineering">Engineering</option>
+    </select>
+    <input type="date" id="registrationDate" class="form-control mb-3" required>
+    <button type="submit" class="btn btn-primary mt-3">Register</button>
+</form>
+
+<script>
+    $(document).ready(function() {
+        $('#registrationForm').on('submit', function(event) {
+            event.preventDefault();
+            alert('Registration successful!');
+        });
+    });
+</script>
+
+</body>
+</html>

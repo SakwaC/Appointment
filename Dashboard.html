@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointments Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: aliceblue;
+        }
+        .footer {
+            margin-top: 20px;
+            text-align: left;
+            background-color: lightblue; /* Change background color */
+            padding: 10px; /* Add some padding */
+            display: flex; /* Use flexbox for horizontal layout */
+            justify-content: space-between; /* Space out the items */
+        }
+        .footer div {
+            margin-right: 20px; /* Add space between items */
+        }
+        .footer div:last-child {
+            margin-right: 0; /* Remove margin from the last item */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header d-flex justify-content-between align-items-center bg-info text-white p-2">
+            <img src="Ku_logo.jpeg" alt="logo" width="50" height="40">
+            <h1>Appointments Dashboard</h1>
+            <div>User Profile</div>
+            <div>
+                <img src="notification.png" alt="Notification Bell" width="30" height="30">
+                Notification
+            </div>
+            <div>log out</div>
+        </div>
+        <div class="navigation">
+            <h2>Navigation</h2>
+            <ul class="list-unstyled">
+                <li><a href="dashboard.html">Dashboard Overview</a></li>
+                <li><a href="upcoming_appointments.html">Upcoming Appointments</a></li>
+                <li><a href="past_appointments.html">Past Appointments</a></li>
+                <li><a href="create_appointment.html">Create Appointment</a></li>
+                <li><a href="feedback.html">Feedback</a></li>
+                <li><a href="reports.html">Reports</a></li>
+                <li><a href="settings.html">Settings</a></li>
+            </ul>
+        </div>
+        <div class="quick-stats d-flex justify-content-between my-3">
+            <div class="stat bg-light p-2 flex-fill mx-1">Upcoming Appointments</div>
+            <div class="stat bg-light p-2 flex-fill mx-1">Completed Appointments</div>
+            <div class="stat bg-light p-2 flex-fill mx-1">Pending Appointments</div>
+            <div class="stat bg-light p-2 flex-fill mx-1">Cancelled Appointments</div>
+        </div>
+        <div class="appointments">
+            <h2>Upcoming Appointments</h2>
+            <div class="appointment-title font-weight-bold">Appointment Title: SIT 400 consultation</div>
+            <div>Date & Time: 2025-01-21</div>
+            <div>Lecturer Name: DR Araka</div>
+            <div>Status: Confirmed</div>
+        </div>
+        <div class="add-appointment text-center">
+            <button id="add-appointment" class="btn btn-primary">Add Appointment</button>
+        </div>
+        <div class="footer">
+            <div><strong>Contact:</strong> appointment.ku.ac.ke</div>
+            <div style="border-left: 1px solid black; padding-left: 10px; margin-left: 10px;"><strong>Privacy & Policy:</strong> For more information, please visit our <a href="#">Privacy Policy</a>.</div>
+            <div style="border-left: 1px solid black; padding-left: 10px; margin-left: 10px;"><strong>Copyright Info:</strong> © 2023 Appointment System. All rights reserved.</div>
+        </div>
+    </div>
+</body>
+</html>

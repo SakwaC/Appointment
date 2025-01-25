@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecturer Registration Form</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: aqua;
+            text-align: center;
+        }
+        form {
+            max-width: 400px;
+            margin: auto;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Lecturer Registration Form</h2>
+<form id="lecturerRegistrationForm">
+    <input type="text" class="form-control" id="lecturerId" placeholder="Lecturer ID No" required>
+    <input type="text" class="form-control" id="name" placeholder="Name" required>
+    <input type="email" class="form-control" id="email" placeholder="Email" required>
+    <input type="password" class="form-control" id="password" placeholder="Password" required>
+    <input type="tel" class="form-control" id="contactNo" placeholder="Contact No" required>
+    <select class="form-control" id="department" required>
+        <option value="">Select Department</option>
+        <option value="Computer Science">Computer Science</option>
+        <option value="Mathematics">Mathematics</option>
+        <option value="Physics">Physics</option>
+        <option value="Engineering">Engineering</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Register</button>
+</form>
+
+<script>
+    $(document).ready(function() {
+        $('#lecturerRegistrationForm').on('submit', function(event) {
+            event.preventDefault();
+            
+            alert('Registration successful!');
+        });
+    });
+</script>
+
+</body>
+</html>

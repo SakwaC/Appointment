@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Land in page</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            background-color: #e7f3ff; /* Light blue background */
+            color: #003366; /* Dark blue text */
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* Center vertically */
+            align-items: center; /* Center horizontally */
+            height: 100vh; /* Full viewport height */
+            margin: 0; /* Remove default margin */
+        }
+        @keyframes move {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        .welcome-message {
+            animation: move 10s linear infinite;
+            white-space: nowrap;
+            font-size: 24px; /* Increased font size for visibility */
+            font-weight: bold; /* Bold text */
+            margin-bottom: 20px; /* Space below the welcome message */
+        }
+        button {
+            background-color: #007bff; /* Bootstrap primary color */
+            color: white; /* White text */
+            border: none; /* No border */
+            padding: 10px 20px; /* Padding for buttons */
+            margin: 5px; /* Margin between buttons */
+            border-radius: 5px; /* Rounded corners */
+        }
+        button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+    </style>
+</head>
+<body>
+    <div class="welcome-message">Welcome to Kenyatta University Student-Lecturer appointment System</div>
+    <div>User type</div>
+    <div>
+        <label>
+            <input type="radio" name="userType" value="student"> Student
+        </label>
+        <label>
+            <input type="radio" name="userType" value="lecturer"> Lecturer
+        </label>
+    </div>
+    <div>
+        <button onclick="redirectToForm('signup')">Sign Up</button>
+        <button onclick="redirectToForm('login')">Log In</button>
+    </div>
+    <script>
+    function redirectToForm(action) {
+        const userType = document.querySelector('input[name="userType"]:checked');
+        if (!userType) {
+            alert('Please select a user type.');
+            return;
+        }
+        if (action === 'signup') {
+            if (userType.value === 'student') {
+                location.href = 'Student_registration.html';
+            } else {
+                location.href = 'lecturer_registration.html';
+            }
+        } else if (action === 'login') {
+            if (userType.value === 'student') {
+                location.href = 'student_login.html';
+            } else {
+                location.href = 'Lecturer_login.html';
+            }
+        }
+    }
+    </script>
+</body>
+</html>
