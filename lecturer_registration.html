@@ -11,7 +11,7 @@
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
-            background-color: aqua;
+            background-color: lightblue;
             text-align: center;
         }
         form {
@@ -43,6 +43,22 @@
     <input type="text" class="form-control" id="name" placeholder="Name" required>
     <input type="email" class="form-control" id="email" placeholder="Email" required>
     <input type="password" class="form-control" id="password" placeholder="Password" required>
+    <div class="form-check mb-3">
+        <input type="checkbox" class="form-check-input" id="showPassword">
+        <label class="form-check-label" for="showPassword">Show Password</label>
+    </div>
+    <script>
+        $(document).ready(function() {
+            $('#showPassword').change(function() {
+                var passwordField = $('#password');
+                if ($(this).is(':checked')) {
+                    passwordField.attr('type', 'text');
+                } else {
+                    passwordField.attr('type', 'password');
+                }
+            });
+        });
+    </script>
     <input type="tel" class="form-control" id="contactNo" placeholder="Contact No" required>
     <select class="form-control" id="department" required>
         <option value="">Select Department</option>

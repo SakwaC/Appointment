@@ -10,14 +10,41 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <style>
         body {
-            background-color: #e7f3ff; /* Light blue background */
-            color: #003366; /* Dark blue text */
+            background-color: #e7f3ff; 
+            color: #003366;
             display: flex;
             flex-direction: column;
-            justify-content: center; /* Center vertically */
-            align-items: center; /* Center horizontally */
-            height: 100vh; /* Full viewport height */
-            margin: 0; /* Remove default margin */
+            justify-content: center;
+            align-items: center; 
+            height: 100vh; 
+            margin: 0;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+        .background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('Ku_main(gate).jpg');
+            background-size: cover;
+            background-position: center;
+            
+        }
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5); /* Dark overlay for brightness reduction */
+            z-index: 1;
+        }
+        .content {
+            position: relative;
+            z-index: 2;
         }
         @keyframes move {
             0% { transform: translateX(100%); }
@@ -26,37 +53,53 @@
         .welcome-message {
             animation: move 10s linear infinite;
             white-space: nowrap;
-            font-size: 24px; /* Increased font size for visibility */
-            font-weight: bold; /* Bold text */
-            margin-bottom: 20px; /* Space below the welcome message */
+            font-size: 36px; /* Increased font size */
+            font-weight: bold; 
+            margin-bottom: 20px; 
+            color: #000;
+        }
+        .user-type {
+            font-size: 24px; /* Increased font size for user type */
+            margin-bottom: 10px;
+            font-weight: bold;
+            color:#007bff;
         }
         button {
-            background-color: #007bff; /* Bootstrap primary color */
-            color: white; /* White text */
-            border: none; /* No border */
-            padding: 10px 20px; /* Padding for buttons */
-            margin: 5px; /* Margin between buttons */
-            border-radius: 5px; /* Rounded corners */
+            background-color: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            margin: 5px; 
+            border-radius: 5px; 
         }
         button:hover {
-            background-color: #0056b3; /* Darker blue on hover */
+            background-color: #0056b3; 
+        }
+        label{
+            font-size: 18px;
+            font-weight: bold;
+            color: black;
         }
     </style>
 </head>
 <body>
-    <div class="welcome-message">Welcome to Kenyatta University Student-Lecturer appointment System</div>
-    <div>User type</div>
-    <div>
-        <label>
-            <input type="radio" name="userType" value="student"> Student
-        </label>
-        <label>
-            <input type="radio" name="userType" value="lecturer"> Lecturer
-        </label>
-    </div>
-    <div>
-        <button onclick="redirectToForm('signup')">Sign Up</button>
-        <button onclick="redirectToForm('login')">Log In</button>
+    <div class="background"></div>
+    <div class="overlay"></div>
+    <div class="content">
+        <div class="welcome-message">Welcome to Kenyatta University Student-Lecturer appointment System</div>
+        <div class="user-type">User type</div>
+        <div>
+            <label>
+                <input type="radio" name="userType" value="student"> Student
+            </label>
+            <label>
+                <input type="radio" name="userType" value="lecturer"> Lecturer
+            </label>
+        </div>
+        <div>
+            <button onclick="redirectToForm('signup')">Sign Up</button>
+            <button onclick="redirectToForm('login')">Log In</button>
+        </div>
     </div>
     <script>
     function redirectToForm(action) {

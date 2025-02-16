@@ -1,0 +1,52 @@
+<!Doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User-Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css?v=1.0">
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+        .Profile {
+            padding: 20px;
+            background-color: #007bff; /* Blue background */
+            color: white; /* White text */
+            border-radius: 5px; /* Rounded corners */
+        }
+        .body {
+            background-color: aliceblue;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .h2 {
+            text-align: center;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body class="body">
+    <div class="Profile">
+        <h2>Profile Information</h2>
+        <p><strong>Name:</strong> <span id="userName"></span></p>
+        <p><strong>ID No:</strong> <span id="userId"></span></p>
+        <p><strong>Department:</strong> <span id="userDepartment"></span></p>
+        <p><strong>User Type:</strong> <span id="userType"></span></p>
+    </div>
+    <script>
+        // Example of fetching user data from a database
+        fetch('/api/user') // Adjust the API endpoint as necessary
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('userName').innerText = data.name;
+                document.getElementById('userId').innerText = data.id;
+                document.getElementById('userDepartment').innerText = data.department;
+                document.getElementById('userType').innerText = data.userType;
+            })
+            .catch(error => console.error('Error fetching user data:', error));
+    </script>
+</body>
+</html>
