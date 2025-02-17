@@ -12,26 +12,26 @@
             color: blue;
         }
         label {
-            font-weight: bold; /* Make label bold */
+            font-weight: bold;
         }
     </style>
     <body>
-        <div class="container">
+        <div class="container mt-5">
             <h2>Create Appointment</h2>
-            <form>
+            <form action="create_appointment.php" method="POST">
                 <div class="form-group">
-                    <label for="Appointment Id">Appointment Id:</label>
-                    <input type ="text" class="form-control" id="appointment Id" required>
+                    <label for="appointmentId">Appointment ID:</label>
+                    <input type="text" class="form-control" id="appointmentId" name="appointment_id" required>
                 </div>
                 <div class="form-group">
                     <label for="appointmentDate">Appointment Date:</label>
-                    <input type="date" class="form-control" id="appointmentDate" required>
+                    <input type="date" class="form-control" id="appointmentDate" name="appointment_date" required>
                 </div>
                 <div class="form-group">
                     <label for="appointmentDescription">Describe the Appointment:</label>
-                    <textarea class="form-control" id="appointmentDescription" rows="3" required></textarea>
+                    <textarea class="form-control" id="appointmentDescription" name="appointment_description" rows="3" required></textarea>
                 </div>
-                <div class="text-center"> <!-- Centering the button -->
+                <div class="text-center">
                     <button type="submit" class="btn btn-primary">Submit</button>
                 </div>
             </form>

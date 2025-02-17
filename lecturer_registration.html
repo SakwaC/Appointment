@@ -9,72 +9,71 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
             background-color: lightblue;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 100%;
             text-align: center;
         }
-        form {
-            max-width: 400px;
-            margin: auto;
+
+        .form-control {
+            margin-bottom: 15px;
         }
-        input, select {
+
+        .btn {
             width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-        }
-        button {
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #45a049;
         }
     </style>
 </head>
 <body>
 
-<h2>Lecturer Registration Form</h2>
-<form id="lecturerRegistrationForm">
-    <input type="text" class="form-control" id="lecturerId" placeholder="Lecturer ID No" required>
-    <input type="text" class="form-control" id="name" placeholder="Name" required>
-    <input type="email" class="form-control" id="email" placeholder="Email" required>
-    <input type="password" class="form-control" id="password" placeholder="Password" required>
-    <div class="form-check mb-3">
-        <input type="checkbox" class="form-check-input" id="showPassword">
-        <label class="form-check-label" for="showPassword">Show Password</label>
-    </div>
-    <script>
-        $(document).ready(function() {
-            $('#showPassword').change(function() {
-                var passwordField = $('#password');
-                if ($(this).is(':checked')) {
-                    passwordField.attr('type', 'text');
-                } else {
-                    passwordField.attr('type', 'password');
-                }
-            });
-        });
-    </script>
-    <input type="tel" class="form-control" id="contactNo" placeholder="Contact No" required>
-    <select class="form-control" id="department" required>
-        <option value="">Select Department</option>
-        <option value="Computer Science">Computer Science</option>
-        <option value="Mathematics">Mathematics</option>
-        <option value="Physics">Physics</option>
-        <option value="Engineering">Engineering</option>
-    </select>
-    <button type="submit" class="btn btn-primary">Register</button>
-</form>
+<div class="form-container">
+    <h2>Lecturer Registration</h2>
+    <form id="registrationForm" class="needs-validation" novalidate action="http://localhost:8080/Appointment/lecturer_reg.php" method="POST">
+        <input type="text" class="form-control" name="lecturerId" id="lecturerId" placeholder="Lecturer ID No" required>
+        <input type="text" class="form-control" name="name" id="name" placeholder="Name" required>
+        <input type="email" class="form-control" name="email" id="email" placeholder="Email" required>
+        <input type="password" class="form-control" name="password" id="password" placeholder="Password" required>
+
+        <div class="form-check mb-3">
+            <input type="checkbox" class="form-check-input" id="showPassword">
+            <label class="form-check-label" for="showPassword">Show Password</label>
+        </div>
+
+        <input type="tel" class="form-control" name="contactNo" id="contactNo" placeholder="Contact No" required>
+
+        <select class="form-control" name="department" id="department" required>
+            <option value="">Select Department</option>
+            <option value="Computer Science">Computer Science</option>
+            <option value="Mathematics">Mathematics</option>
+            <option value="Physics">Physics</option>
+            <option value="Engineering">Engineering</option>
+        </select>
+
+        <button type="submit" class="btn btn-primary mt-3">Register</button>
+    </form>
+</div>
 
 <script>
     $(document).ready(function() {
-        $('#lecturerRegistrationForm').on('submit', function(event) {
+        $('#showPassword').change(function() {
+            var passwordField = $('#password');
+            passwordField.attr('type', this.checked ? 'text' : 'password');
+        });
+
+        $('#registrationForm').on('submit', function(event) {
             event.preventDefault();
-            
             alert('Registration successful!');
         });
     });

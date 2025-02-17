@@ -8,72 +8,98 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
     <style>
         body {
-            background-color: lightblue;
+            background-color:lightblue;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .form-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 100%;
             text-align: center;
         }
-        form {
-            max-width: 400px;
-            margin: auto;
+
+        .form-container h2 {
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-control {
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #007bff;
+            border: none;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
 
-<h2>Student Registration Form</h2>
-<form id="registrationForm" class="needs-validation" novalidate action="http://localhost:8080/Appointment/Student_reg.php" method="POST">
+<div class="form-container">
+    <h2>Student Registration</h2>
+    <form id="registrationForm" class="needs-validation" novalidate action="http://localhost/Appointment/Student_reg.php" method="POST">
 
 
-    <input type="text" id="studentId" name="Student_ID" class="form-control mb-3" placeholder="Student ID No" required>
-    <input type="text" id="name" name="Name" class="form-control mb-3" placeholder="Name" required>
-    <input type="email" id="email" name="email" class="form-control mb-3" placeholder="Email" required>
-    <input type="password" id="password" name="password" class="form-control mb-3" placeholder="Password" required>
-    <div class="form-check mb-3">
-        <input type="checkbox" class="form-check-input" id="showPassword">
-        <label class="form-check-label" for="showPassword">Show Password</label>
-    </div>
-    <script>
-        $(document).ready(function() {
-            $('#showPassword').change(function() {
-                var passwordField = $('#password');
-                if ($(this).is(':checked')) {
-                    passwordField.attr('type', 'text');
-                } else {
-                    passwordField.attr('type', 'password');
-                }
-            });
+        <input type="text" id="studentId" name="Student_ID" class="form-control" placeholder="Student ID No" required>
+        <input type="text" id="name" name="Name" class="form-control" placeholder="Name" required>
+        <input type="email" id="email" name="email" class="form-control" placeholder="Email" required>
+        <input type="password" id="password" name="password" class="form-control" placeholder="Password" required>
+
+        <div class="form-check mb-3">
+            <input type="checkbox" class="form-check-input" id="showPassword">
+            <label class="form-check-label" for="showPassword">Show Password</label>
+        </div>
+
+        <input type="tel" id="contactNo" name="contact_No" class="form-control" placeholder="Contact No" required>
+
+        <select id="course" name="course" class="form-control" required>
+            <option value="">Select Course</option>
+            <option value="Computer Science">Computer Science</option>
+            <option value="Information Technology">Information Technology</option>
+            <option value="Business Administration">Business Administration</option>
+            <option value="Engineering">Engineering</option>
+        </select>
+
+        <input type="date" id="registrationDate" name="registration_date" class="form-control" required>
+
+        <button type="submit" class="btn mt-3">Register</button>
+    </form>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#showPassword').change(function() {
+            var passwordField = $('#password');
+            passwordField.attr('type', this.checked ? 'text' : 'password');
         });
-    </script>
 
-    <input type="tel" id="contactNo" name="contact_No" class="form-control mb-3" placeholder="Contact No" required>
-
-    <select id="course" name="course" class="form-control mb-3" required>
-
-        <option value="">Select Course</option>
-        <option value="Computer Science">Computer Science</option>
-        <option value="Information Technology">Information Technology</option>
-        <option value="Business Administration">Business Administration</option>
-        <option value="Engineering">Engineering</option>
-    </select>
-    <input type="date" id="registrationDate" name="registration_date" class="form-control mb-3" required>
-
-    <button type="submit" class="btn btn-primary mt-3">Register</button>
-</form>
-
-    <script>
-        $(document).ready(function() {
-            $('#showPassword').change(function() {
-                var passwordField = $('#password');
-                if ($(this).is(':checked')) {
-                    passwordField.attr('type', 'text');
-                } else {
-                    passwordField.attr('type', 'password');
-                }
-            });
+        $('#registrationForm').on('submit', function(event) {
+            event.preventDefault();
+            alert('Registration successful!');
         });
-    </script>
-
+    });
+</script>
 
 </body>
 </html>
