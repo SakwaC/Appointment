@@ -2,6 +2,11 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+header('Content-Type: application/json'); // Ensure the response is in JSON format
+header('Access-Control-Allow-Origin: *'); // Allow requests from any origin
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS'); // Allow specific HTTP methods
+header('Access-Control-Allow-Headers: Content-Type, Authorization'); // Allow specific headers
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Database connection
     $conn = new mysqli('localhost', 'root', '', 'appointment');
@@ -42,13 +47,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         // Execute the statement
         if ($stmt->execute()) {
-            echo "<script>
-                    alert('Registration successful!');
-                    window.location.href = 'student_login.html'; 
-                  </script>";
+            echo json_encode(['status' => 'success']);
         } else {
-            echo "Error executing query: " . $stmt->error;
+            echo json_encode(['status' => 'failure']);
         }
+        
 
         // Close statement
         $stmt->close();

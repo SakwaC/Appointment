@@ -5,8 +5,14 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Create Appointment</title>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>  
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     </head>
     <style>
+        body{
+            background-color: lightblue;
+        }
         h2 {
             text-align: center;
             color: blue;
@@ -18,7 +24,7 @@
     <body>
         <div class="container mt-5">
             <h2>Create Appointment</h2>
-            <form action="create_appointment.php" method="POST">
+            <form id="appointmentForm">
                 <div class="form-group">
                     <label for="appointmentId">Appointment ID:</label>
                     <input type="text" class="form-control" id="appointmentId" name="appointment_id" required>
@@ -32,9 +38,38 @@
                     <textarea class="form-control" id="appointmentDescription" name="appointment_description" rows="3" required></textarea>
                 </div>
                 <div class="text-center">
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="button" class="btn btn-primary" onclick="setStatus()">Submit</button>
                 </div>
             </form>
         </div>
+
+        <script>
+             function setStatus(status) {
+                $("#status").val(status);
+                submitAppointment();
+            }
+            function submitAppointment() {
+                var formData = $("#appointmentForm").serialize();
+
+                $.ajax({
+                    type: "POST",
+                    url: "http://localhost/Appointments/Create_back.php",
+                    data: formData,
+                    dataType: "json",
+                    success: function(response) {
+                        if (response.status === "success") {
+                            alert("Appointment successfully created!");
+                            window.location.href = 'Dashboard.html';
+                        } else {
+                            alert('Appointment failed. Please try again.');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("AJAX error:", error);
+                        alert("An error occurred while processing the request.");
+                    }
+                });
+            }
+        </script>
     </body>
 </html>

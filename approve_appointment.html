@@ -1,44 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Approve Appointment</title>
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-        <script>
-            function setStatus(status) {
-                document.getElementById("status").value = status;
-                document.getElementById("appointmentForm").submit();
-            }
-        </script>
-    </head>
-    <style>
-        h2 {
-            text-align: center;
-            color: blue;
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approve Appointment</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>  
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</head>
+<style>
+    h2 { text-align: center; color: blue; }
+    label { font-weight: bold; }
+    body{
+        background-color: lightblue;
+    }
+</style>
+
+<body>
+    <div class="container mt-5">
+        <h2>Approve Appointment</h2>
+        <form id="appointmentForm">
+            <div class="form-group">
+                <label for="appointmentId">Appointment ID</label>
+                <input type="text" class="form-control" id="appointmentId" name="appointment_id" placeholder="Enter Appointment ID" required>
+            </div>
+            <div class="form-group">
+                <label for="lecturerComments">Comments</label>
+                <textarea class="form-control" id="lecturerComments" name="comments" rows="3" placeholder="Enter your comments here" required></textarea>
+            </div>
+            <input type="hidden" id="status" name="status">
+            <div class="text-center">
+                <button type="button" class="btn btn-success" onclick="setStatus('approved')">Approve</button>
+                <button type="button" class="btn btn-danger" onclick="setStatus('rejected')">Reject</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function setStatus(status) {
+            $("#status").val(status);
+            submitForm();
         }
-        label {
-            font-weight: bold;
+
+        function submitForm() {
+            var formData = $("#appointmentForm").serialize();
+
+            $.ajax({
+                type: "POST",
+                url: "http://localhost/Appointments/approve_back.php",
+                data: formData,
+                dataType: "json",
+                success: function(response) {
+                    // Directly access the response as an object
+                    if (response.status === "success") {
+                        alert('Registration successful!');
+                        window.location.href = 'Dashboard.html';
+                    } else {
+                        alert('Registration failed. Please try again.');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX error:", error);
+                    alert("An error occurred while processing the request.");
+                }
+            });
         }
-    </style>
-    <body>
-        <div class="container mt-5">
-            <h2>Approve Appointment</h2>
-            <form id="appointmentForm" action="approve_appointment.php" method="POST">
-                <div class="form-group">
-                    <label for="appointmentId">Appointment ID</label>
-                    <input type="text" class="form-control" id="appointmentId" name="appointment_id" placeholder="Enter Appointment ID" required>
-                </div>
-                <div class="form-group">
-                    <label for="lecturerComments">Comments</label>
-                    <textarea class="form-control" id="lecturerComments" name="comments" rows="3" placeholder="Enter your comments here" required></textarea>
-                </div>
-                <input type="hidden" id="status" name="status">
-                <div class="text-center">
-                    <button type="button" class="btn btn-success" onclick="setStatus('approved')">Approve</button>
-                    <button type="button" class="btn btn-danger" onclick="setStatus('rejected')">Reject</button>
-                </div>
-            </form>
-        </div>
-    </body>
+    </script>
+</body>
 </html>

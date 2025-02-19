@@ -58,7 +58,7 @@
 
 <div class="form-container">
     <h2>Student Registration</h2>
-    <form id="registrationForm" class="needs-validation" novalidate action="http://localhost/Appointment/Student_reg.php" method="POST">
+    <form id="registrationForm" class="needs-validation" novalidate action="http://localhost/Appointments/Student_reg.php" method="POST">
 
 
         <input type="text" id="studentId" name="Student_ID" class="form-control" placeholder="Student ID No" required>
@@ -86,20 +86,55 @@
         <button type="submit" class="btn mt-3">Register</button>
     </form>
 </div>
-
 <script>
     $(document).ready(function() {
+        // Toggle Password Visibility
         $('#showPassword').change(function() {
             var passwordField = $('#password');
             passwordField.attr('type', this.checked ? 'text' : 'password');
         });
-
+    
+        // Validate ID format and check if all fields are filled before submission
         $('#registrationForm').on('submit', function(event) {
-            event.preventDefault();
-            alert('Registration successful!');
+            event.preventDefault(); // Prevent default form submission
+    
+            var studentId = $('#studentId').val();
+            var name = $('#name').val();
+            var email = $('#email').val();
+            var password = $('#password').val();
+            var contactNo = $('#contactNo').val();
+            var course = $('#course').val();
+            var registrationDate = $('#registrationDate').val();
+    
+            // Check if all fields are filled
+            if (!studentId || !name || !email || !password || !contactNo || !course || !registrationDate) {
+                alert('Please fill in all fields.');
+                return; // Stop submission
+            }
+    
+            // Create FormData to send the form data via AJAX
+            var formData = $(this).serialize();
+    
+            // Send data using AJAX to the PHP file
+            $.ajax({
+                type: 'POST',
+                url: 'http://localhost/Appointments/Student_reg.php', // Adjust this if necessary
+                data: formData,
+                success: function(response) {
+                    // Directly access the response as an object
+                    if (response.status === "success") {
+                        alert('Registration successful!');
+                        window.location.href = 'student_login.html';
+                    } else {
+                        alert('Registration failed. Please try again.');
+                    }
+                },
+                error: function() {
+                    alert('An error occurred while submitting the form.');
+                }
+            });
         });
     });
-</script>
-
+    </script>    
 </body>
 </html>

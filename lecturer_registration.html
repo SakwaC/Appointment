@@ -40,7 +40,7 @@
 
 <div class="form-container">
     <h2>Lecturer Registration</h2>
-    <form id="registrationForm" class="needs-validation" novalidate action="http://localhost:8080/Appointment/lecturer_reg.php" method="POST">
+    <form id="registrationForm" class="needs-validation" novalidate action="http://localhost/Appointments/lecturer_reg.php" method="POST">
         <input type="text" class="form-control" name="lecturerId" id="lecturerId" placeholder="Lecturer ID No" required>
         <input type="text" class="form-control" name="name" id="name" placeholder="Name" required>
         <input type="email" class="form-control" name="email" id="email" placeholder="Email" required>
@@ -61,23 +61,64 @@
             <option value="Engineering">Engineering</option>
         </select>
 
+        <input type="date" id="registrationDate" name="registration_date" class="form-control" required>
+
+
         <button type="submit" class="btn btn-primary mt-3">Register</button>
     </form>
 </div>
 
 <script>
     $(document).ready(function() {
+        // Toggle Password Visibility
         $('#showPassword').change(function() {
             var passwordField = $('#password');
             passwordField.attr('type', this.checked ? 'text' : 'password');
         });
-
+    
+        // Validate ID format and check if all fields are filled before submission
         $('#registrationForm').on('submit', function(event) {
-            event.preventDefault();
-            alert('Registration successful!');
+            event.preventDefault(); // Prevent default form submission
+    
+            var lecturerId = $('#lecturerId').val();
+            var name = $('#name').val();
+            var email = $('#email').val();
+            var password = $('#password').val();
+            var contactNo = $('#contactNo').val();
+            var department = $('#department').val();
+            var registrationDate = $('#registrationDate').val();
+    
+            // Check if all fields are filled
+            if (!lecturerId || !name || !email || !password || !contactNo || !department || !registrationDate) {
+                alert('Please fill in all fields.');
+                return; // Stop submission
+            }
+    
+            // Create FormData to send the form data via AJAX
+            var formData = $(this).serialize();
+    
+            // Send data using AJAX to the PHP file
+            $.ajax({
+                type: 'POST',
+                url: 'http://localhost/Appointments/lecturer_reg.php', // Adjust this if necessary
+                data: formData,
+                success: function(response) {
+                    // Directly access the response as an object
+                    if (response.status === "success") {
+                        alert('Registration successful!');
+                        window.location.href = 'lecturer_login.html'; // Redirect on success
+                    } else {
+                        alert('Registration failed. Please try again.');
+                    }
+                },
+
+                error: function() {
+                    alert('An error occurred while submitting the form.');
+                }
+            });
         });
     });
-</script>
+    </script>   
 
 </body>
 </html>
