@@ -1,38 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Lecturer login</title>
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    </head>
-    <style>
-        body{
-            background-color: lightblue;
-        }
-    </style>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecturer Login</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<style>
+    body {
+        background-color: lightblue;
+    }
+    .login-container {
+        max-width: 400px;
+        margin: 100px auto;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+    h3 {
+        text-decoration: underline;
+    }
+    label {
+        font-weight: bold;
+    }
+</style>
 <body>
-    <body>
-        <div class="container text-center">
-            <h2 class="mt-5">Lecturer login</h2>
-            <form>
+    <div class="container">
+        <div class="login-container">
+            <h3 class="text-center mb-4">Lecturer Login</h3>
+            <form id="loginForm">
                 <div class="form-group">
-                    <label for="idNumber">ID Number</label>
-                    <input type="text" class="form-control" id="idNumber" placeholder="Enter ID Number" required>
-                </div>
-                <div class="form-group">
-                    <label for="name">Name</label>
-                    <input type="text" class="form-control" id="name" placeholder="Enter Name" required>
+                    <label for="idNumber">Lecturer ID</label>
+                    <input type="text" class="form-control" id="idNumber" name="lecturer_ID" placeholder="Enter ID Number" required>
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
-                    <input type="password" class="form-control" id="password" placeholder="Enter Password" required>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter Password" required>
                 </div>
-                <div class="form-group">
-                   Forgot password?<a href="lecturer_registration.html">click here</a> 
+
+                <div class="form-check mb-3">
+                    <input type="checkbox" class="form-check-input" id="showPassword">
+                    <label class="form-check-label" for="showPassword">Show Password</label>
                 </div>
-                <button type="submit" class="btn btn-primary">Log In</button>
+
+                <button type="submit" class="btn btn-primary btn-block">Log In</button>
             </form>
         </div>
-    </body>
-    </html>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // Toggle password visibility
+            $('#showPassword').change(function () {
+                var passwordField = $('#password');
+                passwordField.attr('type', this.checked ? 'text' : 'password');
+            });
+
+            // Handle form submission
+            $('#loginForm').submit(function (event) {
+                event.preventDefault(); // Prevent page reload
+
+                var formData = {
+                    lecturer_ID: $('#idNumber').val().trim(),
+                    password: $('#password').val().trim()
+                };
+
+                if (!formData.lecturer_ID || !formData.password) {
+                    alert("All fields are required!");
+                    return;
+                }
+
+                $.ajax({
+                    type: "POST",
+                    url: "http://localhost/Appointments/Lecturer_login.php",
+                    data: $.param(formData),
+                    contentType: "application/x-www-form-urlencoded",
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.status === "success") {
+                            window.location.href = response.redirect; // Redirect to dashboard
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error(xhr.responseText);
+                        alert("An error occurred: " + error);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

@@ -5,33 +5,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Login</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- jQuery for AJAX -->
 </head>
 <style>
-    body{
+    body {
         background-color: lightblue;
+    }
+    .login-container {
+        max-width: 400px;
+        margin: 100px auto; /* Centers the form */
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+    h3{
+        text-decoration: underline;
+    }
+    label{
+        font-weight: bold;
     }
 </style>
 <body>
-    <div class="container text-center">
-        <h2 class="mt-5">Student Login</h2>
-        <form>
-            <div class="form-group">
-                <label for="idNumber">ID Number</label>
-                <input type="text" class="form-control" id="idNumber" placeholder="Enter ID Number" required>
-            </div>
-            <div class="form-group">
-                <label for="name">Name</label>
-                <input type="text" class="form-control" id="name" placeholder="Enter Name" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" class="form-control" id="password" placeholder="Enter Password" required>
-            </div>
-            <div class="form-group">
-                Forgot password?<a href="Student_registration.html">click here</a>
-            </div>
-            <button type="submit" class="btn btn-primary">Log In</button>
-        </form>
+    <div class="container">
+        <div class="login-container">
+            <h3 class="text-center mb-4">Student Login</h3>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="idNumber">ID Number</label>
+                    <input type="text" class="form-control" id="idNumber" name="Student_ID" placeholder="Enter ID Number" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter Password" required>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-block">Log In</button>
+            </form>
+        </div>
     </div>
+
+    <script>
+        $(document).ready(function () {
+            $('#loginForm').submit(function (event) {
+                event.preventDefault(); // Prevent default form submission
+
+                var formData = {
+                    Student_ID: $('#idNumber').val().trim(),
+                    password: $('#password').val().trim()
+                };
+
+                console.log("Sending data:", formData);
+                
+                $.ajax({
+                    type: "POST",
+                    url:"http://localhost/Appointments/student_login.php",
+
+                    data: formData,
+                    dataType: "json",
+                    success: function (response) {
+                        if (response.status === "success") {
+                            window.location.href = response.redirect; // Redirect to dashboard
+                        } else {
+                            alert(response.message);
+                            if (response.redirect) {
+                                window.location.href = response.redirect; // Redirect to registration if needed
+                            }
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(xhr.responseText);
+                        alert("An error occurred: " + error);
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

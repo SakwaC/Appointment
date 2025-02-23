@@ -55,10 +55,10 @@
 
         <select class="form-control" name="department" id="department" required>
             <option value="">Select Department</option>
-            <option value="Computer Science">Computer Science</option>
-            <option value="Mathematics">Mathematics</option>
+            <option value="Computer Science">Computer Information Science</option>
+            <option value="Mathematics">Mathematics and Computer Science</option>
             <option value="Physics">Physics</option>
-            <option value="Engineering">Engineering</option>
+            <option value="Engineering">Gas,Energy and Petroleum</option>
         </select>
 
         <input type="date" id="registrationDate" name="registration_date" class="form-control" required>
@@ -100,7 +100,7 @@
             // Send data using AJAX to the PHP file
             $.ajax({
                 type: 'POST',
-                url: 'http://localhost/Appointments/lecturer_reg.php', // Adjust this if necessary
+                url: 'http://localhost/Appointments/lecturer_reg.php', 
                 data: formData,
                 success: function(response) {
                     // Directly access the response as an object

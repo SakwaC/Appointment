@@ -1,2 +1,32 @@
 Received: ID=23424123, Date=2025-02-19, Desc=23424123
 Received: ID=23424123, Date=2025-02-19, Desc=\sdasd
+Array
+(
+    [Student_ID] => F21/2998/2024
+    [password] => 1234
+)
+Array
+(
+    [Student_ID] => 123456
+    [password] => password123
+)
+Received: Array
+(
+    [Student_ID] => J40/4040/2020
+    [password] => 1234
+)
+
+Stored password: 
+Received: Array
+(
+    [Student_ID] => J40/4040/2020
+    [password] => 1234
+)
+
+Stored password: 
+Received: Array
+(
+    [Student_ID] => F21/2998/2024
+    [password] => 1234
+)
+
