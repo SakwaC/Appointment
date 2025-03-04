@@ -1,11 +1,14 @@
 <?php
+// Enable error reporting for debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+ini_set('log_errors', 1);
+ini_set('error_log', 'php_errors.log');
 
-header('Content-Type: application/json'); // Ensure the response is in JSON format
-header('Access-Control-Allow-Origin: *'); // Allow requests from any origin
-header('Access-Control-Allow-Methods: POST, GET, OPTIONS'); // Allow specific HTTP methods
-header('Access-Control-Allow-Headers: Content-Type, Authorization'); // Allow specific headers
+header('Content-Type: application/json'); 
+header('Access-Control-Allow-Origin: *'); 
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS'); 
+header('Access-Control-Allow-Headers: Content-Type, Authorization'); 
 
 // Handle Preflight OPTIONS Request
 if ($_SERVER["REQUEST_METHOD"] == "OPTIONS") {
@@ -13,20 +16,20 @@ if ($_SERVER["REQUEST_METHOD"] == "OPTIONS") {
     exit();
 }
 
-// Enable debugging
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
+// Check if the request method is POST
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    
+    // Database connection
     $conn = new mysqli('localhost', 'root', '', 'appointment');
-
+    
     if ($conn->connect_error) {
-        echo json_encode(["status" => "error", "message" => "Database connection failed."]);
+        echo json_encode(["status" => "error", "message" => "Database connection failed: " . $conn->connect_error]);
         exit();
     }
-
+    
+    // Check if data is received
     if (empty($_POST)) {
-        echo json_encode(["status" => "error", "message" => "No data received."]);
+        echo json_encode(["status" => "error", "message" => "No data received.", "debug" => file_get_contents("php://input")]);
         exit();
     }
 
@@ -39,8 +42,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $department = htmlspecialchars(trim($_POST['department']));
     $registration_date = date('Y-m-d'); // Auto-generate today's date
 
+    // Validate required fields
     if (empty($lecturer_ID) || empty($name) || empty($email) || empty($password) || empty($contact_No) || empty($department)) {
         echo json_encode(["status" => "error", "message" => "All fields are required."]);
+        exit();
+    }
+
+    // Validate email format
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        echo json_encode(["status" => "error", "message" => "Invalid email format."]);
         exit();
     }
 
@@ -78,5 +88,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     $conn->close();
+} else {
+    echo json_encode(["status" => "error", "message" => "Invalid request method."]);
 }
 ?>

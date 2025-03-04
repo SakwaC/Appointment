@@ -52,10 +52,17 @@
         .btn:hover {
             background-color: #0056b3;
         }
+        .logo{
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
     </style>
 </head>
 <body>
-
+    <div class="logo">
+        <img src="Ku_logo.jpeg" alt="System Logo" width="100">
+    </div>
 <div class="form-container">
     <h2>Student Registration</h2>
     <form id="registrationForm" class="needs-validation" novalidate action="http://localhost/Appointments/Student_reg.php" method="POST">
@@ -93,11 +100,15 @@
             var passwordField = $('#password');
             passwordField.attr('type', this.checked ? 'text' : 'password');
         });
-    
+
+        // Restrict registration date to only today
+        let today = new Date().toISOString().split('T')[0];
+        $('#registrationDate').attr('min', today).attr('max', today);
+
         // Validate ID format and check if all fields are filled before submission
         $('#registrationForm').on('submit', function(event) {
             event.preventDefault(); // Prevent default form submission
-    
+
             var studentId = $('#studentId').val();
             var name = $('#name').val();
             var email = $('#email').val();
@@ -105,23 +116,22 @@
             var contactNo = $('#contactNo').val();
             var course = $('#course').val();
             var registrationDate = $('#registrationDate').val();
-    
+
             // Check if all fields are filled
             if (!studentId || !name || !email || !password || !contactNo || !course || !registrationDate) {
                 alert('Please fill in all fields.');
                 return; // Stop submission
             }
-    
+
             // Create FormData to send the form data via AJAX
             var formData = $(this).serialize();
-    
+
             // Send data using AJAX to the PHP file
             $.ajax({
                 type: 'POST',
                 url: 'http://localhost/Appointments/Student_reg.php',
                 data: formData,
                 success: function(response) {
-                    // Directly access the response as an object
                     if (response.status === "success") {
                         alert('Registration successful!');
                         window.location.href = 'student_login.html';
@@ -135,6 +145,7 @@
             });
         });
     });
-    </script>    
+</script>
+
 </body>
 </html>

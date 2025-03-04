@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lecturer Login</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
 </head>
 <style>
     body {
@@ -13,7 +13,7 @@
     }
     .login-container {
         max-width: 400px;
-        margin: 100px auto;
+        margin: 100px auto; 
         padding: 20px;
         background: white;
         border-radius: 8px;
@@ -25,73 +25,129 @@
     label {
         font-weight: bold;
     }
+    .logo {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+    }
+    p {
+        text-align: center;
+    }
+    #feedback {
+        display: none;
+        text-align: center;
+        color: red;
+        font-weight: bold;
+    }
 </style>
 <body>
+    <div class="logo">
+        <img src="Ku_logo.jpeg" alt="System Logo" width="100">
+    </div>
+    
     <div class="container">
         <div class="login-container">
             <h3 class="text-center mb-4">Lecturer Login</h3>
-            <form id="loginForm">
+            <p id="feedback"></p> <!-- Feedback message area -->
+            <form id="loginFormLecturer">
                 <div class="form-group">
-                    <label for="idNumber">Lecturer ID</label>
-                    <input type="text" class="form-control" id="idNumber" name="lecturer_ID" placeholder="Enter ID Number" required>
+                    <label for="lecturerId">Lecturer ID</label>
+                    <input type="text" class="form-control" id="lecturerId" name="Lecturer_ID" placeholder="Enter ID Number" required>
                 </div>
                 <div class="form-group">
                     <label for="password">Password</label>
                     <input type="password" class="form-control" id="password" name="password" placeholder="Enter Password" required>
                 </div>
-
-                <div class="form-check mb-3">
-                    <input type="checkbox" class="form-check-input" id="showPassword">
-                    <label class="form-check-label" for="showPassword">Show Password</label>
-                </div>
-
                 <button type="submit" class="btn btn-primary btn-block">Log In</button>
+                <p><a href="#" data-toggle="modal" data-target="#forgotPasswordModalLecturer">Forgot Password?</a></p>
             </form>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div class="modal fade" id="forgotPasswordModalLecturer" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reset Password</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="forgotPasswordFormLecturer">
+                        <div class="form-group">
+                            <label for="resetLecturerId">Lecturer ID</label>
+                            <input type="text" class="form-control" id="resetLecturerId" name="Lecturer_ID" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newLecturerPassword">New Password</label>
+                            <input type="password" class="form-control" id="newLecturerPassword" name="newPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-block">Reset Password</button>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
         $(document).ready(function () {
-            // Toggle password visibility
-            $('#showPassword').change(function () {
-                var passwordField = $('#password');
-                passwordField.attr('type', this.checked ? 'text' : 'password');
-            });
-
-            // Handle form submission
-            $('#loginForm').submit(function (event) {
-                event.preventDefault(); // Prevent page reload
-
+            $('#loginFormLecturer').submit(function (event) {
+                event.preventDefault();
                 var formData = {
-                    lecturer_ID: $('#idNumber').val().trim(),
+                    Lecturer_ID: $('#lecturerId').val().trim(),
                     password: $('#password').val().trim()
                 };
-
-                if (!formData.lecturer_ID || !formData.password) {
-                    alert("All fields are required!");
-                    return;
-                }
-
                 $.ajax({
                     type: "POST",
-                    url: "http://localhost/Appointments/Lecturer_login.php",
-                    data: $.param(formData),
-                    contentType: "application/x-www-form-urlencoded",
+                    url: "http://localhost/Appointments/lecturer_login.php",
+                    data: formData,
                     dataType: "json",
                     success: function (response) {
                         if (response.status === "success") {
-                            window.location.href = response.redirect; // Redirect to dashboard
+                            window.location.href = response.redirect;
                         } else {
                             alert(response.message);
                         }
                     },
-                    error: function (xhr, status, error) {
+                    error: function(xhr) {
                         console.error(xhr.responseText);
-                        alert("An error occurred: " + error);
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            $("#feedback").text(response.message).css("color", "red").show();
+                        } catch (e) {
+                            $("#feedback").text("An unexpected error occurred. Please try again.").css("color", "red").show();
+                        }
+                    }
+                });
+            });
+
+            $('#forgotPasswordFormLecturer').submit(function (event) {
+                event.preventDefault();
+                var resetData = JSON.stringify({
+                    lecturer_id: $('#resetLecturerId').val().trim(),
+                    new_password: $('#newLecturerPassword').val().trim()
+                });
+
+                $.ajax({
+                    type: "POST",
+                    url: "http://localhost/Appointments/reset_password(lec).php",
+                    data: resetData,
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (response) {
+                        alert(response.message);
+                        if (response.status === "success") {
+                            $('#forgotPasswordModalLecturer').modal('hide');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error(xhr.responseText);
+                        alert("An error occurred.");
                     }
                 });
             });
         });
     </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

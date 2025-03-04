@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,19 +11,19 @@
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <style>
-    body {
+        body {
             font-family: Arial, sans-serif;
             background-color: aliceblue;
         }
         .sidebar {
             background-color: #f8f9fa;
-             padding: 10px;
-             margin-top: 10px;
-              background-color: lightblue;
-               height: auto; /* Allow sidebar to auto-adjust its height */
-               min-height: 100%; /* Ensure it doesn't shrink smaller than the content */
-              }
-
+            padding: 10px;
+            margin-top: 10px;
+            background-color: lightblue;
+            height: auto;
+            min-height: 100%;
+            margin-top: 20px;
+        }
         .sidebar .nav-link {
             color: black;
             font-weight: bold;
@@ -44,53 +45,39 @@
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             margin-top: 30px;
         }
-    /* Footer Styling */
+        /* Footer Styling */
         .footer {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background-color: lightblue;
             padding: 10px;
-            margin-top: 160px;
-        
-        
-    }
-    
-    .footer div {
-        flex: 1;
-        text-align: center;
-        padding: 8px;
-        font-weight: normal;
-    }
-    
-    /* Add vertical separator */
-    .footer div:not(:last-child) {
-        border-right: 2px solid black;
-    }
-    h5{
-        font-weight: bold;
-    }
+            margin-top: 210px;
+        }
+        .footer div {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            font-weight: normal;
+        }
+        .footer div:not(:last-child) {
+            border-right: 2px solid black;
+        }
+        h5 {
+            font-weight: bold;
+        }
     </style>
-    
 </head>
 <body>
-
-    <!-- Header -->
     <div class="header d-flex justify-content-between align-items-center bg-info text-white p-3">
         <img src="Ku_logo.jpeg" alt="logo" width="50" height="40">
-        <h1 class="m-0">Appointments Dashboard</h1>
-        <div class="d-flex align-items-center">
-            <img src="notification.png" alt="Notification Bell" width="30" height="30">
-            <span class="ml-2">Notification</span>
-        </div>
+        <h1>Appointments Dashboard</h1>
         <div><a href="student_login.html" class="text-white">Log out</a></div>
     </div>
 
     <div class="container-fluid">
         <div class="row">
-            <!-- Left Sidebar Navigation -->
             <div class="col-md-3 col-lg-2 sidebar">
-                
                 <ul class="nav flex-column">
                     <li class="nav-item"><a class="nav-link" href="dashboard.html">Dashboard Overview</a></li>
                     <li class="nav-item"><a class="nav-link" href="upcoming_appointments.html">Upcoming Appointments</a></li>
@@ -101,22 +88,18 @@
                     <li class="nav-item"><a class="nav-link" href="settings.html">Settings</a></li>
                 </ul>
             </div>
-
+            
             <!-- Main Content: Upcoming Appointments -->
             <div class="col-md-6 col-lg-6">
                 <div class="appointments">
                     <h2>Upcoming Appointments</h2>
-                    <div class="appointment-title font-weight-bold">SIT 400 Consultation</div>
-                    <div>Date & Time: 2025-01-21</div>
-                    <div>Lecturer Name: DR Araka</div>
+                    <div class="appointment-title font-weight-bold">Sample Appointment</div>
+                    <div>Date & Time: 2025-03-05 10:00 AM</div>
+                    <div>Lecturer Name: Dr. John Doe</div>
                     <div>Status: Confirmed</div>
-                    
                     <div class="text-center mt-3">
-                        <button id="add-appointment" class="btn btn-primary" onclick="location.href='create_appointment.html';">
-                            Add Appointment
-                        </button>
+                        <button id="add-appointment" class="btn btn-primary" onclick="location.href='create_appointment.html';">Add Appointment</button>
                     </div>
-                    
                 </div>
             </div>
 
@@ -124,14 +107,14 @@
             <div class="col-md-3 col-lg-4">
                 <div class="quick-stats">
                     <h5>Quick Stats</h5>
-                    <div class="stat my-2">Upcoming Appointments: <strong>3</strong></div>
-                    <div class="stat my-2">Completed Appointments: <strong>5</strong></div>
-                    <div class="stat my-2">Pending Appointments: <strong>2</strong></div>
-                    <div class="stat my-2">Cancelled Appointments: <strong>1</strong></div>
+                    <div class="stat my-2">Upcoming Appointments: <strong>10</strong></div>
+                    <div class="stat my-2">Completed Appointments: <strong>25</strong></div>
+                    <div class="stat my-2">Pending Appointments: <strong>5</strong></div>
+                    <div class="stat my-2">Cancelled Appointments: <strong>2</strong></div>
                 </div>
             </div>
         </div>
-
+        
         <!-- Footer -->
         <div class="footer">
             <div><strong>Contact:</strong> appointment.ku.ac.ke</div>
@@ -139,6 +122,5 @@
             <div><strong>© 2025 Appointment System. All rights reserved.</strong></div>
         </div>
     </div>
-
 </body>
 </html>

@@ -3,11 +3,10 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-header('Content-Type: application/json'); // Ensure the response is in JSON format
-header('Access-Control-Allow-Origin: *'); // Allow requests from any origin
-header('Access-Control-Allow-Methods: POST, GET, OPTIONS'); // Allow specific HTTP methods
-header('Access-Control-Allow-Headers: Content-Type, Authorization'); // Allow specific headers
-
+header('Content-Type: application/json'); 
+header('Access-Control-Allow-Origin: *'); 
+header('Access-Control-Allow-Methods: POST, GET, OPTIONS'); 
+header('Access-Control-Allow-Headers: Content-Type, Authorization'); 
 
 // Database connection
 $host = "localhost"; 
@@ -19,48 +18,47 @@ $conn = new mysqli($host, $username, $password, $database);
 
 // Check for connection errors
 if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
+    die(json_encode(["status" => "error", "message" => "Database connection failed"]));
 }
 
 // Check if form data is submitted
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // Retrieve form inputs
-    $appointment_id = $_POST["appointment_id"] ?? '';
+    $department = $_POST["department"] ?? '';
+    $lecturer = $_POST["lecturer"] ?? '';
     $appointment_date = $_POST["appointment_date"] ?? '';
+    $appointment_time = $_POST["appointment_time"] ?? '';
     $appointment_description = $_POST["appointment_description"] ?? '';
 
-    // Validate input
-    if (empty($appointment_id) || empty($appointment_date) || empty($appointment_description)) {
-        die("Error: All fields are required.");
+    // Validate inputs
+    if (empty($department) || empty($lecturer) || empty($appointment_date) || empty($appointment_time) || empty($appointment_description)) {
+        echo json_encode(["status" => "error", "message" => "All fields are required."]);
+        exit();
     }
 
-    // Debugging: Check database connection
-    if (!$conn) {
-        die("Database connection failed: " . mysqli_connect_error());
+    // Ensure date is not in the past
+    if (strtotime($appointment_date) < strtotime(date("Y-m-d"))) {
+        echo json_encode(["status" => "error", "message" => "Appointment date cannot be in the past."]);
+        exit();
     }
 
-    // Prepare SQL statement
-    $stmt = $conn->prepare("INSERT INTO appoint (Appointment_ID, appointment_date, Description) VALUES (?, ?, ?)");
-    
+    // Insert appointment data
+    $stmt = $conn->prepare("INSERT INTO appoint (Department, Lecturer_ID, Appointment_Date, Appointment_Time, Description) VALUES (?, ?, ?, ?, ?)");
     if (!$stmt) {
-        die("Error in SQL statement: " . $conn->error);
+        die(json_encode(["status" => "error", "message" => "SQL error: " . $conn->error]));
     }
 
-    // Bind parameters
-    $stmt->bind_param("iss", $appointment_id, $appointment_date, $appointment_description);
+    $stmt->bind_param("sisss", $department, $lecturer, $appointment_date, $appointment_time, $appointment_description);
 
-    // Execute query and check for errors
     if ($stmt->execute()) {
-        echo json_encode(['status' => 'success']);
+        echo json_encode(["status" => "success", "message" => "Appointment created successfully"]);
     } else {
-        echo json_encode(['status' => 'failure']);
+        echo json_encode(["status" => "error", "message" => "Failed to create appointment"]);
     }
 
     $stmt->close();
 } else {
-    echo json_encode(["status" => "error", "message" => "Invalid request method."]);
+    echo json_encode(["status" => "error", "message" => "Invalid request method"]);
 }
 
-// Close connection
 $conn->close();
 ?>

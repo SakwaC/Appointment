@@ -35,7 +35,7 @@
 <body>
     <div class="container">
         <h1 class="text-center">Feedback</h1>
-        <form id="feedbackForm">
+        <form id="feedbackForm" method="post">
             <div class="form-group">
                 <label for="Student_ID">Student ID</label>
                 <input type="text" class="form-control" id="Student_ID" name="Student_ID" placeholder="Student ID" required>
@@ -67,7 +67,7 @@
 
                 $.ajax({
                     type: "POST",
-                    url: "feed_db.php",
+                    url: "http://localhost/Appointments/feed_db.php",
                     data: $(this).serialize(),
                     dataType: "json",
                     success: function(response) {

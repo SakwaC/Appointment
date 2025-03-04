@@ -6,9 +6,9 @@ ini_set('display_errors', 1);
 header('Content-Type: application/json');
 
 // Allow specific origin or * for development 
-header('Access-Control-Allow-Origin: *');  // Or a specific domain
-header('Access-Control-Allow-Methods: POST'); // Only POST is needed
-header('Access-Control-Allow-Headers: Content-Type'); // Only Content-Type
+header('Access-Control-Allow-Origin: *');  
+header('Access-Control-Allow-Methods: POST'); 
+header('Access-Control-Allow-Headers: Content-Type');
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $conn = new mysqli('localhost', 'root', '', 'appointment');
@@ -22,10 +22,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Use $_POST directly since you're sending form data
     $Student_ID = trim($_POST['Student_ID'] ?? '');
     $email = trim($_POST['email'] ?? '');
-    $feedback = trim($_POST['feedback_text'] ?? '');
+    $feedback_text = trim($_POST['feedback_text'] ?? '');
 
     // Validation 
-    if (empty($Student_ID) || empty($email) || empty($feedback)) {
+    if (empty($Student_ID) || empty($email) || empty($feedback_text)) {
         http_response_code(400);
         echo json_encode(['status' => 'failure', 'message' => "All fields are required."]);
         exit;
@@ -40,10 +40,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Prepared Statement 
     $sql = "INSERT INTO feedback (Student_ID, Email, feedback_text) VALUES (?, ?, ?)";
     if ($stmt = $conn->prepare($sql)) {
-        $stmt->bind_param("sss", $Student_ID, $email, $feedback);
+        $stmt->bind_param("sss", $Student_ID, $email, $feedback_text);
 
         if ($stmt->execute()) {
-            http_response_code(201); // 201 Created is more appropriate for successful inserts
+            http_response_code(201); 
             echo json_encode(['status' => 'success', 'message' => 'Feedback submitted successfully.']);
         } else {
             http_response_code(500);

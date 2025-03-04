@@ -3,125 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Land in page</title>
+    <title>Landing Page</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <style>
         body {
-            background-color: #e7f3ff; 
-            color: #003366;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center; 
+            background-color: #ffffff; 
             height: 100vh; 
             margin: 0;
-            position: relative;
-            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-align: center;
         }
-        .background {
+        .logo {
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: url('Ku_main(gate).jpg');
-            background-size: cover;
-            background-position: center;
-            
+            top: 20px;
+            left: 20px;
         }
-        .overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5); /* Dark overlay for brightness reduction */
-            z-index: 1;
+        .container-wrapper {
+            display: flex;
+            justify-content: space-around;
+            width: 80%;
         }
-        .content {
-            position: relative;
-            z-index: 2;
+        .container-box {
+            background-color: #e7f3ff;
+            padding: 20px;
+            border-radius: 10px;
+            width: 30%;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
-        @keyframes move {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-        .welcome-message {
-            animation: move 10s linear infinite;
-            white-space: nowrap;
-            font-size: 36px; /* Increased font size */
-            font-weight: bold; 
-            margin-bottom: 20px; 
-            color: #000;
-        }
-        .user-type {
-            font-size: 24px; /* Increased font size for user type */
-            margin-bottom: 10px;
-            font-weight: bold;
-            color:#007bff;
+        .container-box h2 {
+            color: #007bff;
         }
         button {
-            background-color: #007bff; 
-            color: white; 
-            border: none; 
-            padding: 10px 20px; 
-            margin: 5px; 
-            border-radius: 5px; 
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
         }
         button:hover {
-            background-color: #0056b3; 
+            background-color: #0056b3;
         }
-        label{
-            font-size: 18px;
+        p{
             font-weight: bold;
-            color: black;
+            font-size: 20px;
+        }
+        p1{
+            font-size: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="background"></div>
-    <div class="overlay"></div>
-    <div class="content">
-        <div class="welcome-message">Welcome to Kenyatta University Student-Lecturer appointment System</div>
-        <div class="user-type">User type</div>
-        <div>
-            <label>
-                <input type="radio" name="userType" value="student"> Student
-            </label>
-            <label>
-                <input type="radio" name="userType" value="lecturer"> Lecturer
-            </label>
+    <div class="logo">
+        <img src="Ku_logo.jpeg" alt="System Logo" width="100">
+    </div>
+    <h1>Welcome to Kenyatta University Student-Lecturer Appointment System</h1>
+    <p1>
+        Please log into the system as a student or a lecturer to book an appointment with a lecturer.
+    </p1>
+    <div class="container-wrapper">
+        <div class="container-box">
+            <h2>Student</h2>
+            <p>Log in or sign up as a student.</p>
+            <button onclick="location.href='student_login.html'">Log In</button>
+            <button onclick="location.href='Student_registration.html'">Sign Up</button>
         </div>
-        <div>
-            <button onclick="redirectToForm('signup')">Sign Up</button>
-            <button onclick="redirectToForm('login')">Log In</button>
+        <div class="container-box">
+            <h2>Lecturer</h2>
+            <p>Log in or sign up as a lecturer.</p>
+            <button onclick="location.href='Lecturer_login.html'">Log In</button>
+            <button onclick="location.href='lecturer_registration.html'">Sign Up</button>
+        </div>
+        <div class="container-box">
+            <h2>About the System</h2>
+            <a href="About.html">Learn More about the system</a>
         </div>
     </div>
-    <script>
-    function redirectToForm(action) {
-        const userType = document.querySelector('input[name="userType"]:checked');
-        if (!userType) {
-            alert('Please select a user type.');
-            return;
-        }
-        if (action === 'signup') {
-            if (userType.value === 'student') {
-                location.href = 'Student_registration.html';
-            } else {
-                location.href = 'lecturer_registration.html';
-            }
-        } else if (action === 'login') {
-            if (userType.value === 'student') {
-                location.href = 'student_login.html';
-            } else {
-                location.href = 'Lecturer_login.html';
-            }
-        }
-    }
-    </script>
 </body>
 </html>

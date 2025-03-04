@@ -34,9 +34,17 @@
         .btn {
             width: 100%;
         }
+        .logo{
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
     </style>
 </head>
 <body>
+    <div class="logo">
+        <img src="Ku_logo.jpeg" alt="System Logo" width="100">
+    </div>
 
 <div class="form-container">
     <h2>Lecturer Registration</h2>
@@ -75,11 +83,15 @@
             var passwordField = $('#password');
             passwordField.attr('type', this.checked ? 'text' : 'password');
         });
-    
-        // Validate ID format and check if all fields are filled before submission
+
+        // Restrict registration date to only today
+        let today = new Date().toISOString().split('T')[0];
+        $('#registrationDate').attr('min', today).attr('max', today);
+
+        // Validate form before submission
         $('#registrationForm').on('submit', function(event) {
             event.preventDefault(); // Prevent default form submission
-    
+
             var lecturerId = $('#lecturerId').val();
             var name = $('#name').val();
             var email = $('#email').val();
@@ -87,38 +99,37 @@
             var contactNo = $('#contactNo').val();
             var department = $('#department').val();
             var registrationDate = $('#registrationDate').val();
-    
+
             // Check if all fields are filled
             if (!lecturerId || !name || !email || !password || !contactNo || !department || !registrationDate) {
                 alert('Please fill in all fields.');
-                return; // Stop submission
+                return;
             }
-    
+
             // Create FormData to send the form data via AJAX
             var formData = $(this).serialize();
-    
+
             // Send data using AJAX to the PHP file
             $.ajax({
                 type: 'POST',
                 url: 'http://localhost/Appointments/lecturer_reg.php', 
                 data: formData,
                 success: function(response) {
-                    // Directly access the response as an object
                     if (response.status === "success") {
                         alert('Registration successful!');
-                        window.location.href = 'lecturer_login.html'; // Redirect on success
+                        window.location.href = 'lecturer_login.html';
                     } else {
                         alert('Registration failed. Please try again.');
                     }
                 },
-
                 error: function() {
                     alert('An error occurred while submitting the form.');
                 }
             });
         });
     });
-    </script>   
+</script>
+
 
 </body>
 </html>

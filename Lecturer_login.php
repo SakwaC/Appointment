@@ -2,12 +2,12 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Allow cross-origin requests
+header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 
-// Handle CORS preflight requests
+// Handle CORS preflight request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
@@ -17,14 +17,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Method Not Allowed"]);
-    exit;
+    exit();
 }
 
 // Validate input fields
-if (!isset($_POST['lecturer_ID']) || !isset($_POST['password'])) {
+if (!isset($_POST['Lecturer_ID']) || !isset($_POST['password'])) {
     http_response_code(400);
-    echo json_encode(["status" => "error", "message" => "Missing lecturer_ID or Password."]);
-    exit;
+    echo json_encode(["status" => "error", "message" => "Missing Lecturer_ID or Password."]);
+    exit();
 }
 
 // Database connection
@@ -39,35 +39,23 @@ $conn = new mysqli($host, $username, $password, $database);
 if ($conn->connect_error) {
     http_response_code(500);
     echo json_encode(["status" => "error", "message" => "Database connection failed: " . $conn->connect_error]);
-    exit;
+    exit();
 }
 
 // Get user input & sanitize
-$lecturer_ID = trim($_POST['lecturer_ID']);
+$lecturerID = trim($_POST['Lecturer_ID']);
 $password = trim($_POST['password']);
 
-// Prepare SQL statement to prevent SQL injection
-$sql = "SELECT password FROM lecturer WHERE lecturer_ID = ?";
+// Prepare SQL statement
+$sql = "SELECT Password FROM lecturer WHERE lecturer_ID = ?";
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("s", $lecturer_ID);
+$stmt->bind_param("s", $lecturerID);
 $stmt->execute();
-$result = $stmt->get_result();
+$stmt->store_result();
 
-if ($result->num_rows > 0) {
-    $user = $result->fetch_assoc();
-    $hashedPassword = $user['password']; // Retrieve stored hashed password
-
-    // Check if the password is hashed; if not, hash it and update DB
-    if (!password_get_info($hashedPassword)['algo']) {
-        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-
-        // Update the database with the hashed password
-        $update_sql = "UPDATE lecturer SET password = ? WHERE lecturer_ID = ?";
-        $update_stmt = $conn->prepare($update_sql);
-        $update_stmt->bind_param("ss", $hashedPassword, $lecturer_ID);
-        $update_stmt->execute();
-        $update_stmt->close();
-    }
+if ($stmt->num_rows > 0) {
+    $stmt->bind_result($hashedPassword);
+    $stmt->fetch();
 
     // Verify hashed password
     if (password_verify($password, $hashedPassword)) {

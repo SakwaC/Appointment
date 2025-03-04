@@ -28,10 +28,10 @@ if (!isset($_POST['Student_ID']) || !isset($_POST['password'])) {
 }
 
 // Database connection
-$host = "localhost"; // Change if using a remote database
-$username = "root";  // Default XAMPP username
-$password = "";      // Default XAMPP password is empty
-$database = "appointment"; // Ensure this is the correct name
+$host = "localhost"; 
+$username = "root";  
+$password = "";      
+$database = "appointment"; 
 
 $conn = new mysqli($host, $username, $password, $database);
 
@@ -71,7 +71,7 @@ if ($result->num_rows > 0) {
 
     // Verify hashed password
     if (password_verify($password, $hashedPassword)) {
-        echo json_encode(["status" => "success", "redirect" => "dashboard.html"]);
+        echo json_encode(["status" => "success", "redirect" => "Dashboard.html"]);
     } else {
         http_response_code(401);
         echo json_encode(["status" => "error", "message" => "Invalid login credentials."]);
