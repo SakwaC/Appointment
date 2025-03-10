@@ -8,27 +8,23 @@
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>  
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <style>
+            body { background-color: lightblue; }
+            h2 { text-align: center; color: blue; }
+            label { font-weight: bold; }
+        </style>
     </head>
-    <style>
-        body {
-            background-color: lightblue;
-        }
-        h2 {
-            text-align: center;
-            color: blue;
-        }
-        label {
-            font-weight: bold;
-        }
-    </style>
     <body>
         <div class="container mt-5">
             <h2>Create Appointment</h2>
             <form id="appointmentForm">
-                <div class="form-group">
+                <!-- <div class="form-group">
                     <label for="appointmentId">Appointment ID:</label>
                     <input type="text" class="form-control" id="appointmentId" name="appointment_id" readonly>
-                </div>
+                </div> -->
+                
+                <input type="hidden" id="studentId" name="student_id" value="<?php echo $studentID; ?>">
+
                 <div class="form-group">
                     <label for="appointmentDate">Appointment Date:</label>
                     <input type="date" class="form-control" id="appointmentDate" name="appointment_date" required>
@@ -47,7 +43,7 @@
                 </div>
                 <div class="form-group">
                     <label for="appointmentTime">Appointment Time:</label>
-                    <input type="time" class="form-control" id="appointmentTime" name="appointment_time" required>
+                    <input type="time" class="form-control" id="appointmentTime" name="time_of_appointment" required>
                 </div>
                 <div class="form-group">
                     <label for="appointmentDescription">Describe the Appointment:</label>
@@ -59,61 +55,66 @@
             </form>
         </div>
 
-        <script>
-            $(document).ready(function () {
-                // Auto-generate appointment ID
-                $("#appointmentId").val("APT-" + Math.floor(Math.random() * 1000000));
-                
-                // Restrict appointment date to today and future dates
-                let today = new Date().toISOString().split('T')[0];
-                $('#appointmentDate').attr('min', today);
-                
-                // Fetch departments from the database
-                $.getJSON("http://localhost/Appointments/get_department.php", function(data) {
-                    $.each(data, function(index, value) {
-                        $('#department').append('<option value="' + value.id + '">' + value.name + '</option>');
-                    });
-                });
+       <script>
+        $(document).ready(function () {
+            // Fetch unique appointment ID from the server
+            $.getJSON("http://localhost/Appointments/get_appointment_ID.php", function(data) {
+                $("#appointmentId").val(data.id);
+            });
 
-                // Fetch lecturers based on selected department
-                $('#department').change(function() {
-                    let departmentId = $(this).val();
-                    $('#lecturer').empty().append('<option value="">Select Lecturer</option>');
-                    
-                    if (departmentId) {
-                        $.getJSON("http://localhost/Appointments/get_lecturer.php?dept_id=" + departmentId, function(data) {
-                            $.each(data, function(index, value) {
-                                $('#lecturer').append('<option value="' + value.id + '">' + value.name + '</option>');
-                            });
-                        });
-                    }
-                });
+            // Restrict appointment date to today and future dates
+            let today = new Date().toISOString().split('T')[0];
+            $('#appointmentDate').attr('min', today);
 
-                // Submit form
-                $('#appointmentForm').submit(function (event) {
-                    event.preventDefault();
-                    var formData = $(this).serialize();
-                    
-                    $.ajax({
-                        type: "POST",
-                        url: "http://localhost/Appointments/Create_back.php",
-                        data: formData,
-                        dataType: "json",
-                        success: function(response) {
-                            if (response.status === "success") {
-                                alert("Appointment successfully created!");
-                                window.location.href = 'Dashboard.html';
-                            } else {
-                                alert('Appointment failed. Please try again.');
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            console.error("AJAX error:", error);
-                            alert("An error occurred while processing the request.");
-                        }
-                    });
+            // Fetch distinct departments from the lecturers table
+            $.getJSON("http://localhost/Appointments/get_department.php", function(data) {
+                $.each(data, function(index, value) {
+                    $('#department').append('<option value="' + value.department + '">' + value.department + '</option>');
                 });
             });
-        </script>
+
+            // Fetch lecturers based on selected department
+            $('#department').change(function() {
+                let departmentName = $(this).val();
+
+                $('#lecturer').empty().append('<option value="">Select Lecturer</option>');
+                
+                if (departmentName) {
+                    $.getJSON("http://localhost/Appointments/get_lecturer.php?department=" + departmentName, function(data) {
+                        $.each(data, function(index, value) {
+                            $('#lecturer').append('<option value="' + value.id + '">' + value.name + '</option>');
+                        });
+                    }).fail(function(jqXHR, textStatus, errorThrown) {
+                        console.error("AJAX Error:", textStatus, errorThrown);
+                    });
+                }
+            });
+
+            // Submit form
+            $('#appointmentForm').submit(function (event) {
+                event.preventDefault();
+                var formData = $(this).serialize();
+                
+                $.ajax({
+                    type: "POST",
+                    url: "http://localhost/Appointments/Create_back.php",
+                    data: formData,
+                    dataType: "json",
+                    success: function(response) {
+                        if (response.status === "success") {
+                            alert("Appointment successfully created!");
+                            window.location.href = 'Dashboard.html';
+                        } else {
+                            alert(response.message || 'Appointment failed. Please try again.');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("AJAX Error:", error);
+                        alert("An error occurred while processing the request. Check console for details.");
+                    }
+                });
+            });
+        });
+       </script>
     </body>
 </html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booked Appointments</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body class="bg-light">
+    <div class="container mt-4">
+        <h2 class="text-center text-primary">Booked Appointments</h2>
+        <table class="table table-bordered mt-3">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Appointment ID</th>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th>Department</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody id="appointmentTable">
+                <!-- Data will be loaded here via AJAX -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: "http://localhost/Appointments/get_booked_appointment.php",
+                type: "GET",
+                dataType: "json",
+                success: function(response) {
+                    if (response.length > 0) {
+                        let tableRows = "";
+                        $.each(response, function(index, appointment) {
+                            tableRows += `
+                                <tr>
+                                    <td>${appointment.appointment_id}</td>
+                                    <td>${appointment.student_id}</td>
+                                    <td>${appointment.student_name}</td>
+                                    <td>${appointment.department}</td>
+                                    <td>${appointment.appointment_date}</td>
+                                    <td>${appointment.time_of_appointment}</td>
+                                    <td>${appointment.appointment_description}</td>
+                                </tr>`;
+                        });
+                        $("#appointmentTable").html(tableRows);
+                    } else {
+                        $("#appointmentTable").html("<tr><td colspan='7' class='text-center text-danger'>No booked appointments found.</td></tr>");
+                    }
+                },
+                error: function() {
+                    alert("Error fetching data. Please try again.");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecturer Availability Settings</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center text-primary">Set Availability & Schedule</h2>
+
+        <form id="availabilityForm">
+            <div class="form-group">
+                <label>Select Available Days:</label><br>
+                <input type="checkbox" name="days[]" value="Monday"> Monday
+                <input type="checkbox" name="days[]" value="Tuesday"> Tuesday
+                <input type="checkbox" name="days[]" value="Wednesday"> Wednesday
+                <input type="checkbox" name="days[]" value="Thursday"> Thursday
+                <input type="checkbox" name="days[]" value="Friday"> Friday
+                <input type="checkbox" name="days[]" value="Saturday"> Saturday
+                <input type="checkbox" name="days[]" value="Sunday"> Sunday
+            </div>
+
+            <div class="form-group">
+                <label for="start_time">Available From:</label>
+                <input type="time" id="start_time" name="start_time" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label for="end_time">Available Until:</label>
+                <input type="time" id="end_time" name="end_time" class="form-control">
+            </div>
+
+            <div class="form-group">
+                <label for="meeting_duration">Meeting Duration (Minutes):</label>
+                <select id="meeting_duration" name="meeting_duration" class="form-control">
+                    <option value="15">15 mins</option>
+                    <option value="30">30 mins</option>
+                    <option value="45">45 mins</option>
+                    <option value="60">1 hour</option>
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-success">Save Availability</button>
+        </form>
+
+        <div class="mt-4">
+            <h3 class="text-info">Your Current Schedule</h3>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Days</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Meeting Duration</th>
+                    </tr>
+                </thead>
+                <tbody id="scheduleTable">
+                    <!-- Schedule will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            function loadSchedule() {
+                $.getJSON("http://localhost/Appointments/get_lecturer_schedule.php", function(data) {
+                    let tableBody = $("#scheduleTable");
+                    tableBody.empty();
+
+                    if (data.length === 0) {
+                        tableBody.append("<tr><td colspan='4' class='text-center'>No schedule set</td></tr>");
+                    } else {
+                        let row = `<tr>
+                            <td>${data.days}</td>
+                            <td>${data.start_time}</td>
+                            <td>${data.end_time}</td>
+                            <td>${data.meeting_duration} mins</td>
+                        </tr>`;
+                        tableBody.append(row);
+                    }
+                });
+            }
+
+            $("#availabilityForm").submit(function(e) {
+                e.preventDefault();
+
+                let formData = $(this).serialize();
+                
+                $.post("http://localhost/Appointments/set_lecturer_availability.php", formData, function(response) {
+                    alert(response.message);
+                    loadSchedule();
+                }, "json");
+            });
+
+            loadSchedule();
+        });
+    </script>
+</body>
+</html>

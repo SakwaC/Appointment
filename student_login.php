@@ -1,4 +1,6 @@
 <?php
+session_start(); // Start the session
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -71,6 +73,7 @@ if ($result->num_rows > 0) {
 
     // Verify hashed password
     if (password_verify($password, $hashedPassword)) {
+        $_SESSION['student_id'] = $studentID; // Store student ID in session
         echo json_encode(["status" => "success", "redirect" => "Dashboard.html"]);
     } else {
         http_response_code(401);

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Past Appointments</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center text-primary">Past Appointments</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Lecturer Name</th>
+                    <th>Lecturer Contact</th>
+                    <th>Department</th>
+                    <th>Appointment Date</th>
+                    <th>Time</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody id="appointmentsTable">
+                <!-- Data will be loaded here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            function loadPastAppointments() {
+                $.getJSON("http://localhost/Appointments/get_past_appointment.php", function(data) {
+                    let tableBody = $("#appointmentsTable");
+                    tableBody.empty();
+
+                    if (data.length === 0) {
+                        tableBody.append("<tr><td colspan='6' class='text-center'>No past appointments</td></tr>");
+                    } else {
+                        data.forEach(appointment => {
+                            let row = `<tr>
+                                <td>${appointment.lecturer_name}</td>
+                                <td>${appointment.lecturer_contact}</td>
+                                <td>${appointment.department}</td>
+                                <td>${appointment.appointment_date}</td>
+                                <td>${appointment.time_of_appointment}</td>
+                                <td>${appointment.appointment_description}</td>
+                            </tr>`;
+                            tableBody.append(row);
+                        });
+                    }
+                });
+            }
+
+            loadPastAppointments();
+        });
+    </script>
+</body>
+</html>

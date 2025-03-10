@@ -23,31 +23,32 @@
     </style>
 </head>
 <body>
+    <?php include 'db2_connect.php'; ?>
     <div class="container-fluid dashboard-container">
         <h2 class="text-center text-primary">Admin Dashboard</h2>
         <div class="row">
             <div class="col-md-3">
                 <div class="card text-center p-3">
                     <h4>Booked Appointments</h4>
-                    <h2 id="bookedCount">0</h2>
+                    <h2><?php echo getBookedAppointments(); ?></h2>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card text-center p-3">
                     <h4>Canceled Appointments</h4>
-                    <h2 id="canceledCount">0</h2>
+                    <h2><?php echo getCanceledAppointments(); ?></h2>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card text-center p-3">
                     <h4>Registered Students</h4>
-                    <h2 id="registeredStudents">0</h2>
+                    <h2><?php echo getRegisteredStudents(); ?></h2>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card text-center p-3">
                     <h4>Available Lecturers</h4>
-                    <h2 id="availableLecturers">0</h2>
+                    <h2><?php echo getAvailableLecturers(); ?></h2>
                 </div>
             </div>
         </div>
@@ -61,40 +62,40 @@
             </div>
         </div>
     </div>
-
+    
     <script>
-        // Dummy data for demonstration
-        document.getElementById("bookedCount").innerText = 120;
-        document.getElementById("canceledCount").innerText = 25;
-        document.getElementById("registeredStudents").innerText = 350;
-        document.getElementById("availableLecturers").innerText = 15;
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('fetch_chart_data.php')
+            .then(response => response.json())
+            .then(data => {
+                var ctx1 = document.getElementById('departmentChart').getContext('2d');
+                var departmentChart = new Chart(ctx1, {
+                    type: 'bar',
+                    data: {
+                        labels: ['CS', 'IT', 'Math', 'Physics', 'Engineering'],
+                        datasets: [{
+                            label: 'Registered Students',
+                            data: data.departmentData,
+                            backgroundColor: 'rgba(54, 162, 235, 0.5)'
+                        }]
+                    }
+                });
 
-        // Chart for students per department
-        var ctx1 = document.getElementById('departmentChart').getContext('2d');
-        var departmentChart = new Chart(ctx1, {
-            type: 'bar',
-            data: {
-                labels: ['CS', 'IT', 'Math', 'Physics', 'Engineering'],
-                datasets: [{
-                    label: 'Registered Students',
-                    data: [100, 80, 60, 50, 60],
-                    backgroundColor: 'rgba(54, 162, 235, 0.5)'
-                }]
-            },
-        });
+                var ctx2 = document.getElementById('lecturerAvailabilityChart').getContext('2d');
+                var lecturerAvailabilityChart = new Chart(ctx2, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Available', 'Busy'],
+                        datasets: [{
+                            data: [data.lecturerAvailability.available, data.lecturerAvailability.busy],
+                            backgroundColor: ['rgba(75, 192, 192, 0.5)', 'rgba(255, 99, 132, 0.5)']
+                        }]
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching data:', error));
+    });
+</script>
 
-        // Chart for lecturer availability
-        var ctx2 = document.getElementById('lecturerAvailabilityChart').getContext('2d');
-        var lecturerAvailabilityChart = new Chart(ctx2, {
-            type: 'pie',
-            data: {
-                labels: ['Available', 'Busy'],
-                datasets: [{
-                    data: [15, 5],
-                    backgroundColor: ['rgba(75, 192, 192, 0.5)', 'rgba(255, 99, 132, 0.5)']
-                }]
-            },
-        });
-    </script>
 </body>
 </html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upcoming Appointments</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>  
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center text-primary">Upcoming Appointments</h2>
+        <table class="table table-bordered mt-3">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Appointment ID</th>
+                    <th>Student Name</th>
+                    <th>Lecturer Name</th>
+                    <th>Lecturer Phone</th>
+                    <th>Department</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Description</th>
+                </tr>
+            </thead>
+            <tbody id="appointmentsTable">
+                <!-- Appointments will be dynamically loaded here -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $.getJSON("http://localhost/Appointments/get_upcoming_appointments.php", function(data) {
+                let tableBody = $("#appointmentsTable");
+                tableBody.empty();
+
+                if (data.length === 0) {
+                    tableBody.append("<tr><td colspan='8' class='text-center'>No upcoming appointments</td></tr>");
+                } else {
+                    $.each(data, function(index, appointment) {
+                        let row = `
+                            <tr>
+                                <td>${appointment.appointment_id}</td>
+                                <td>${appointment.student_name}</td>
+                                <td>${appointment.lecturer_name}</td>
+                                <td>${appointment.lecturer_phone}</td>
+                                <td>${appointment.department}</td>
+                                <td>${appointment.appointment_date}</td>
+                                <td>${appointment.time_of_appointment}</td>
+                                <td>${appointment.appointment_description}</td>
+                            </tr>
+                        `;
+                        tableBody.append(row);
+                    });
+                }
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                console.error("AJAX Error:", textStatus, errorThrown);
+                $("#appointmentsTable").append("<tr><td colspan='8' class='text-center text-danger'>Error loading data</td></tr>");
+            });
+        });
+    </script>
+</body>
+</html>
