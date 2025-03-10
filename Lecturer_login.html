@@ -102,8 +102,12 @@
                     url: "http://localhost/Appointments/lecturer_login.php",
                     data: formData,
                     dataType: "json",
+
                     success: function (response) {
                         if (response.status === "success") {
+                            localStorage.setItem('lecturer_logged_in', 'true');
+                            localStorage.setItem('lecturer_id', response.lecturer_id);
+                            localStorage.setItem('session_id', response.session_id);
                             window.location.href = response.redirect;
                         } else {
                             alert(response.message);

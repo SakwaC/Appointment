@@ -129,6 +129,15 @@
             <div><strong>© 2025 Appointment System. All rights reserved.</strong></div>
         </div>
     </div>
-
+    <script>
+        $(document).ready(function() {
+            // Verify session is valid
+            if (!localStorage.getItem('lecturer_logged_in')) {
+                console.log("Session Check: Not authenticated");
+                window.location.href = 'Lecturer_login.html';
+                return;
+            }
+        });
+    </script>
 </body>
 </html>

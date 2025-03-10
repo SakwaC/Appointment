@@ -55,6 +55,7 @@ $stmt->bind_param("s", $studentID);
 $stmt->execute();
 $result = $stmt->get_result();
 
+
 if ($result->num_rows > 0) {
     $user = $result->fetch_assoc();
     $hashedPassword = $user['password']; // Retrieve stored hashed password
@@ -73,8 +74,12 @@ if ($result->num_rows > 0) {
 
     // Verify hashed password
     if (password_verify($password, $hashedPassword)) {
-        $_SESSION['student_id'] = $studentID; // Store student ID in session
-        echo json_encode(["status" => "success", "redirect" => "Dashboard.html"]);
+        $_SESSION['student_id'] = $studentID;
+        echo json_encode([
+            "status" => "success",
+            "redirect" => "Dashboard.html",
+            "student_id" => $studentID  // Include student_id in response
+        ]);
     } else {
         http_response_code(401);
         echo json_encode(["status" => "error", "message" => "Invalid login credentials."]);

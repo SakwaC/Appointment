@@ -56,65 +56,88 @@
         </div>
 
        <script>
-        $(document).ready(function () {
-            // Fetch unique appointment ID from the server
-            $.getJSON("http://localhost/Appointments/get_appointment_ID.php", function(data) {
-                $("#appointmentId").val(data.id);
-            });
+$(document).ready(function () {
+    // Get student_id from localStorage and log it
+    const studentId = localStorage.getItem('student_id');
+    console.log("Retrieved student_id from localStorage:", studentId);
 
-            // Restrict appointment date to today and future dates
-            let today = new Date().toISOString().split('T')[0];
-            $('#appointmentDate').attr('min', today);
+    // Set student_id in form
+    $('#studentId').val(studentId);
 
-            // Fetch distinct departments from the lecturers table
-            $.getJSON("http://localhost/Appointments/get_department.php", function(data) {
-                $.each(data, function(index, value) {
-                    $('#department').append('<option value="' + value.department + '">' + value.department + '</option>');
-                });
-            });
+    // Initialize form elements
+    let today = new Date().toISOString().split('T')[0];
+    $('#appointmentDate').attr('min', today);
 
-            // Fetch lecturers based on selected department
-            $('#department').change(function() {
-                let departmentName = $(this).val();
-
-                $('#lecturer').empty().append('<option value="">Select Lecturer</option>');
-                
-                if (departmentName) {
-                    $.getJSON("http://localhost/Appointments/get_lecturer.php?department=" + departmentName, function(data) {
-                        $.each(data, function(index, value) {
-                            $('#lecturer').append('<option value="' + value.id + '">' + value.name + '</option>');
-                        });
-                    }).fail(function(jqXHR, textStatus, errorThrown) {
-                        console.error("AJAX Error:", textStatus, errorThrown);
-                    });
-                }
-            });
-
-            // Submit form
-            $('#appointmentForm').submit(function (event) {
-                event.preventDefault();
-                var formData = $(this).serialize();
-                
-                $.ajax({
-                    type: "POST",
-                    url: "http://localhost/Appointments/Create_back.php",
-                    data: formData,
-                    dataType: "json",
-                    success: function(response) {
-                        if (response.status === "success") {
-                            alert("Appointment successfully created!");
-                            window.location.href = 'Dashboard.html';
-                        } else {
-                            alert(response.message || 'Appointment failed. Please try again.');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("AJAX Error:", error);
-                        alert("An error occurred while processing the request. Check console for details.");
-                    }
-                });
-            });
+    // Load departments
+    $.getJSON("http://localhost/Appointments/get_department.php", function(data) {
+        $.each(data, function(index, value) {
+            $('#department').append(`<option value="${value.department}">${value.department}</option>`);
         });
+    });
+
+    // Load lecturers on department change
+    $('#department').change(function() {
+        let departmentName = $(this).val();
+        $('#lecturer').empty().append('<option value="">Select Lecturer</option>');
+        
+        if (departmentName) {
+            $.getJSON(`http://localhost/Appointments/get_lecturer.php?department=${departmentName}`, function(data) {
+                $.each(data, function(index, value) {
+                    $('#lecturer').append(`<option value="${value.id}">${value.name}</option>`);
+                });
+            });
+        }
+    });
+
+    // Handle form submission
+    $('#appointmentForm').submit(function (event) {
+        event.preventDefault();
+        
+        // Create form data with student_id
+        let formData = $(this).serializeArray().filter((item, index, self) =>
+            index === self.findIndex((t) => t.name === item.name)
+        );
+
+        // Add student_id if not already present
+        if (!formData.some(item => item.name === 'student_id')) {
+            formData.push({
+                name: 'student_id',
+                value: studentId
+            });
+        }
+
+        // Log the cleaned form data
+        console.log("Form Data Details:", {
+            studentId: studentId,
+            appointmentDate: $('#appointmentDate').val(),
+            department: $('#department').val(),
+            lecturer: $('#lecturer').val(),
+            appointmentTime: $('#appointmentTime').val(),
+            description: $('#appointmentDescription').val()
+        });
+
+        $.ajax({
+            type: "POST",
+            url: "http://localhost/Appointments/Create_back.php",
+            data: $.param(formData),
+            dataType: "json",
+            success: function(response) {
+                console.log("Server response:", response);
+                if (response.status === "success") {
+                    alert("Appointment successfully created!");
+                    window.location.href = 'Dashboard.html';
+                } else {
+                    alert(response.message || 'Appointment failed. Please try again.');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("AJAX Error:", {xhr, status, error});
+                alert("An error occurred while processing the request.");
+            }
+        });
+    });
+});
+
        </script>
     </body>
 </html>

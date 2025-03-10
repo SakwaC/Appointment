@@ -66,34 +66,92 @@
 
     <script>
         $(document).ready(function() {
-            function loadSchedule() {
-                $.getJSON("http://localhost/Appointments/get_lecturer_schedule.php", function(data) {
-                    let tableBody = $("#scheduleTable");
-                    tableBody.empty();
+            if(!localStorage.getItem('lecturer_logged_in')) {
+                console.log("Auth Check: Redirecting to login");
+                window.location.href = 'login.html';
+                return;
+            }
 
-                    if (data.length === 0) {
-                        tableBody.append("<tr><td colspan='4' class='text-center'>No schedule set</td></tr>");
-                    } else {
-                        let row = `<tr>
-                            <td>${data.days}</td>
-                            <td>${data.start_time}</td>
-                            <td>${data.end_time}</td>
-                            <td>${data.meeting_duration} mins</td>
-                        </tr>`;
-                        tableBody.append(row);
+            function loadSchedule() {
+                const lecturerId = localStorage.getItem('lecturer_id');
+                const sessionId = localStorage.getItem('session_id');
+                $.ajax({
+                    url: "http://localhost/Appointments/get_lecturer_schedule.php",
+                    method: "GET",
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Lecturer-ID': lecturerId,
+                        'X-Session-ID': sessionId
+                    },
+                    data: {
+                        lecturer_id: lecturerId,
+                        session_id: sessionId
+                    },
+                    success: function(response) {
+                        let tableBody = $("#scheduleTable");
+                        tableBody.empty();
+                        
+                        // Parse response if it's a string
+                        if (typeof response === 'string') {
+                            response = JSON.parse(response);
+                        }
+
+                        // Direct check for data
+                        if (response && response.data && response.data.length > 0) {
+                            response.data.forEach(schedule => {
+                                let row = `<tr>
+                                    <td>${schedule.days}</td>
+                                    <td>${schedule.start_time}</td>
+                                    <td>${schedule.end_time}</td>
+                                    <td>${schedule.meeting_duration} mins</td>
+                                </tr>`;
+                                tableBody.append(row);
+                            });
+                        } else if (response.error) {
+                            tableBody.append("<tr><td colspan='4' class='text-center'>" + response.error + "</td></tr>");
+                        } else {
+                            tableBody.append("<tr><td colspan='4' class='text-center'>No schedule available</td></tr>");
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.log("AJAX Error:", {
+                            status: status,
+                            error: error,
+                            response: xhr.responseText
+                        });
                     }
                 });
             }
-
             $("#availabilityForm").submit(function(e) {
                 e.preventDefault();
-
                 let formData = $(this).serialize();
-                
-                $.post("http://localhost/Appointments/set_lecturer_availability.php", formData, function(response) {
-                    alert(response.message);
-                    loadSchedule();
-                }, "json");
+                formData += '&lecturer_id=' + localStorage.getItem('lecturer_id');
+    
+                $.ajax({
+                    url: "http://localhost/Appointments/set_lecturer_availability.php",
+                    method: "POST",
+                    data: formData,
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    headers: {
+                        'X-Lecturer-ID': localStorage.getItem('lecturer_id'),
+                        'X-Session-ID': localStorage.getItem('session_id')
+                    },
+                    success: function(response) {
+                        alert(response.message);
+                        // Reset form fields
+                        $('input[type="checkbox"]').prop('checked', false);
+                        $('#start_time').val('');
+                        $('#end_time').val('');
+                        $('#meeting_duration').val('15');
+                        loadSchedule();
+                    },
+                    dataType: "json"
+                });
             });
 
             loadSchedule();

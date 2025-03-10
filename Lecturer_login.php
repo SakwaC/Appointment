@@ -2,6 +2,19 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+session_start();
+session_regenerate_id(true);
+
+// Get the lecturer ID from POST data
+$lecturerID = trim($_POST['Lecturer_ID']);
+
+// Set session variables after successful authentication
+$_SESSION['lecturer_id'] = $lecturerID;
+$_SESSION['is_authenticated'] = true;
+$_SESSION['last_activity'] = time();
+
+
+
 header("Content-Type: application/json");
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
@@ -59,7 +72,23 @@ if ($stmt->num_rows > 0) {
 
     // Verify hashed password
     if (password_verify($password, $hashedPassword)) {
-        echo json_encode(["status" => "success", "redirect" => "lecturer_dashboard.html"]);
+        // Set session variables
+        $_SESSION['lecturer_id'] = $lecturerID;
+        $_SESSION['is_authenticated'] = true;
+        $_SESSION['login_time'] = time();
+        
+        // Return success response
+        echo json_encode([
+            "status" => "success",
+            "redirect" => "lecturer_dashboard.html",
+            "session_id" => session_id(),
+            "lecturer_id" => $lecturerID,
+            "debug" => [
+                "session_id" => session_id(),
+                "lecturer_id" => $_SESSION['lecturer_id'],
+                "is_authenticated" => $_SESSION['is_authenticated']
+            ]
+        ]);
     } else {
         http_response_code(401);
         echo json_encode(["status" => "error", "message" => "Invalid login credentials."]);

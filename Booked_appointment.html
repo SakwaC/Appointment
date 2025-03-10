@@ -29,36 +29,33 @@
     </div>
 
     <script>
-        $(document).ready(function () {
-            $.ajax({
-                url: "http://localhost/Appointments/get_booked_appointment.php",
-                type: "GET",
-                dataType: "json",
-                success: function(response) {
-                    if (response.length > 0) {
-                        let tableRows = "";
-                        $.each(response, function(index, appointment) {
-                            tableRows += `
-                                <tr>
-                                    <td>${appointment.appointment_id}</td>
-                                    <td>${appointment.student_id}</td>
-                                    <td>${appointment.student_name}</td>
-                                    <td>${appointment.department}</td>
-                                    <td>${appointment.appointment_date}</td>
-                                    <td>${appointment.time_of_appointment}</td>
-                                    <td>${appointment.appointment_description}</td>
-                                </tr>`;
-                        });
-                        $("#appointmentTable").html(tableRows);
-                    } else {
-                        $("#appointmentTable").html("<tr><td colspan='7' class='text-center text-danger'>No booked appointments found.</td></tr>");
-                    }
-                },
-                error: function() {
-                    alert("Error fetching data. Please try again.");
-                }
+       function refreshBookedAppointments() {
+    $.ajax({
+        url: "http://localhost/Appointments/get_booked_appointment.php",
+        type: "GET",
+        dataType: "json",
+        success: function(response) {
+            // Update the table with the new data
+            $("#appointmentTable").empty();
+            $.each(response, function(index, appointment) {
+                $("#appointmentTable").append(`
+                    <tr>
+                        <td>${appointment.appointment_id}</td>
+                        <td>${appointment.student_id}</td>
+                        <td>${appointment.student_name}</td>
+                        <td>${appointment.department}</td>
+                        <td>${appointment.appointment_date}</td>
+                        <td>${appointment.time_of_appointment}</td>
+                        <td>${appointment.appointment_description}</td>
+                    </tr>
+                `);
             });
-        });
+        },
+        error: function() {
+            alert("Error fetching data. Please try again.");
+        }
+    });
+}
     </script>
 </body>
 </html>

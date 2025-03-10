@@ -26,7 +26,7 @@ if ($conn->connect_error) {
 // Check if form data is submitted
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Retrieve student_id from session if available
-    $student_id = $_SESSION["student_id"] ?? $_POST["student_id"] ?? ''; 
+    $student_id = $_POST["student_id"] ?? '';
     $department = $_POST["department"] ?? '';
     $lecturer = $_POST["lecturer"] ?? '';
     $appointment_date = $_POST["appointment_date"] ?? '';
@@ -34,7 +34,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $appointment_description = $_POST["appointment_description"] ?? '';
 
     // Log the student_id for debugging
-    error_log("Student ID: " . $student_id);
+    error_log("Received POST data: " . print_r($_POST, true));
+    error_log("Student ID received: " . $student_id);
 
     // Validate inputs
     if (empty($student_id) || empty($department) || empty($lecturer) || empty($appointment_date) || empty($time_of_appointment) || empty($appointment_description)) {
@@ -49,25 +50,44 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     }
 
     // Generate a unique Appointment_ID in format APPT-YYYYMMDD-XXXX
-    $date_part = date("Ymd"); // Get current date as YYYYMMDD
-    $result = $conn->query("SELECT COUNT(*) as total FROM appoint WHERE Appointment_Date = '$appointment_date'");
+    $date_part = date("Ymd");
+
+    // Query to get the highest number for today's appointments
+    $result = $conn->query("SELECT MAX(SUBSTRING(Appointment_ID, -4)) as max_num 
+                           FROM appoint 
+                           WHERE Appointment_ID LIKE 'APPT-$date_part-%'");
     $row = $result->fetch_assoc();
-    $count = $row['total'] + 1; // Increment count for uniqueness
-
-    $appointment_id = "APPT-$date_part-" . str_pad($count, 4, "0", STR_PAD_LEFT); // Format APPT-YYYYMMDD-XXXX
-
+    $next_num = ($row['max_num'] ? intval($row['max_num']) + 1 : 1);
+    
+    // Format with leading zeros
+    $appointment_id = "APPT-$date_part-" . str_pad($next_num, 4, "0", STR_PAD_LEFT);
+    
+    // Verify uniqueness
+    while ($conn->query("SELECT 1 FROM appoint WHERE Appointment_ID = '$appointment_id'")->num_rows > 0) {
+        $next_num++;
+        $appointment_id = "APPT-$date_part-" . str_pad($next_num, 4, "0", STR_PAD_LEFT);
+    }
     // Insert appointment data with the generated Appointment_ID
     $stmt = $conn->prepare("INSERT INTO appoint (Appointment_ID, student_id, Department, Lecturer_ID, Appointment_Date, time_of_appointment, Description) VALUES (?, ?, ?, ?, ?, ?, ?)");
     if (!$stmt) {
         die(json_encode(["status" => "error", "message" => "SQL error: " . $conn->error]));
     }
 
-    $stmt->bind_param("sisisss", $appointment_id, $student_id, $department, $lecturer, $appointment_date, $time_of_appointment, $appointment_description);
+    $stmt->bind_param("sssssss", $appointment_id, $student_id, $department, $lecturer, $appointment_date, $time_of_appointment, $appointment_description);
 
     if ($stmt->execute()) {
-        echo json_encode(["status" => "success", "message" => "Appointment created successfully", "appointment_id" => $appointment_id]);
+        echo json_encode([
+            "status" => "success", 
+            "message" => "Appointment created successfully", 
+            "appointment_id" => $appointment_id
+        ]);
     } else {
-        echo json_encode(["status" => "error", "message" => "Failed to create appointment"]);
+        echo json_encode([
+            "status" => "error",
+            "message" => "Failed to create appointment",
+            "error_details" => $stmt->error,
+            "sql_error" => $conn->error
+        ]);
     }
 
     $stmt->close();

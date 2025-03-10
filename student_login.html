@@ -102,12 +102,13 @@
                     type: "POST",
                     url: "http://localhost/Appointments/student_login.php",
                     data: formData,
-                    dataType: "json",
-                    success: function (response) {
-                        if (response.status === "success") {
-                            window.location.href = response.redirect;
+                    dataType: "json",success: function(response) {
+                        console.log("Login Response:", response);
+                        if(response.status === "success") {
+                            localStorage.setItem('student_id', response.student_id);
+                            window.location.href = "Dashboard.html";
                         } else {
-                            alert(response.message);
+                            $("#errorMessage").text(response.message);
                         }
                     },
                     error: function(xhr) {
