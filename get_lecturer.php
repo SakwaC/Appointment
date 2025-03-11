@@ -15,7 +15,7 @@ $department_name = isset($_GET['department']) ? $_GET['department'] : '';
 
 if (!empty($department_name)) {
     // Select unique lecturer names and pick the first ID for each
-    $sql = "SELECT MIN(id) as id, name FROM lecturer WHERE department = ? GROUP BY name";
+    $sql = "SELECT MIN(id) as id, lecturer_ID, name FROM lecturer WHERE department = ? GROUP BY name, lecturer_ID";
     
     if ($stmt = $conn->prepare($sql)) {
         $stmt->bind_param("s", $department_name);
@@ -25,7 +25,11 @@ if (!empty($department_name)) {
         $lecturers = [];
 
         while ($row = $result->fetch_assoc()) {
-            $lecturers[] = ["id" => $row['id'], "name" => $row['name']];
+            $lecturers[] = [
+                "id" => $row['id'], 
+                "lecturer_ID" => $row['lecturer_ID'],
+                "name" => $row['name']
+            ];
         }
 
         echo json_encode($lecturers);

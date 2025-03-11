@@ -18,11 +18,6 @@
         <div class="container mt-5">
             <h2>Create Appointment</h2>
             <form id="appointmentForm">
-                <!-- <div class="form-group">
-                    <label for="appointmentId">Appointment ID:</label>
-                    <input type="text" class="form-control" id="appointmentId" name="appointment_id" readonly>
-                </div> -->
-                
                 <input type="hidden" id="studentId" name="student_id" value="<?php echo $studentID; ?>">
 
                 <div class="form-group">
@@ -41,6 +36,25 @@
                         <option value="">Select Lecturer</option>
                     </select>
                 </div>
+
+                <!-- Lecturer Schedule Section -->
+                <div class="form-group">
+                    <label>Lecturer Schedule:</label>
+                    <div id="lecturerSchedule">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Day</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Meeting Duration</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label for="appointmentTime">Appointment Time:</label>
                     <input type="time" class="form-control" id="appointmentTime" name="time_of_appointment" required>
@@ -59,7 +73,6 @@
 $(document).ready(function () {
     // Get student_id from localStorage and log it
     const studentId = localStorage.getItem('student_id');
-    console.log("Retrieved student_id from localStorage:", studentId);
 
     // Set student_id in form
     $('#studentId').val(studentId);
@@ -82,12 +95,44 @@ $(document).ready(function () {
         
         if (departmentName) {
             $.getJSON(`http://localhost/Appointments/get_lecturer.php?department=${departmentName}`, function(data) {
+                console.log("Lecturer data:", data); // Debug line
                 $.each(data, function(index, value) {
-                    $('#lecturer').append(`<option value="${value.id}">${value.name}</option>`);
+                    $('#lecturer').append(`<option value="${value.lecturer_ID}">${value.name}</option>`);
                 });
             });
         }
     });
+    // Load schedule when lecturer is selected
+    $('#lecturer').change(function () {
+        let lecturerId = $(this).val();
+        $('#lecturerSchedule tbody').empty();
+
+        if (lecturerId) {
+            $.getJSON(`http://localhost/Appointments/get_lecturer_schedule.php?lecturer_ID=${lecturerId}`, function(data) {
+                if (data.data && data.data.length > 0) {
+                    $.each(data.data, function(index, value) {
+                        $('#lecturerSchedule tbody').append(`
+                            <tr>
+                                <td>${value.days}</td>
+                                <td>${value.start_time}</td>
+                                <td>${value.end_time}</td>
+                                <td>${value.meeting_duration} mins</td>
+                            </tr>
+                        `);
+                    });
+                } else {
+                    $('#lecturerSchedule tbody').append('<tr><td colspan="4" class="text-center">No schedule available</td></tr>');
+                }
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                console.log("AJAX Error:", {
+                    status: textStatus,
+                    error: errorThrown,
+                    response: jqXHR.responseText
+                });
+            });
+        }
+    });
+
 
     // Handle form submission
     $('#appointmentForm').submit(function (event) {
@@ -137,7 +182,6 @@ $(document).ready(function () {
         });
     });
 });
-
        </script>
     </body>
 </html>

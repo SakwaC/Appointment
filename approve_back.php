@@ -31,35 +31,54 @@ if ($conn->connect_error) {
 
 // Check if form data is received via POST
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // Validate input
-    $appointment_id = isset($_POST["appointment_id"]) ? intval($_POST["appointment_id"]) : 0;
-    $comments = htmlspecialchars(trim($_POST["comments"] ?? ''));
-    $status = htmlspecialchars(trim($_POST["status"] ?? ''));
-    $date_approved = date('Y-m-d H:i:s'); // Auto-generate timestamp
+    // Debugging: Log received POST data
+    file_put_contents("debug_log.txt", print_r($_POST, true));
 
-    if ($appointment_id === 0 || empty($comments) || empty($status)) {
-        echo json_encode(["status" => "error", "message" => "All fields are required and Appointment ID must be valid."]);
+    // Validate input
+    $appointment_id = $_POST["appointment_id"] ?? ''; // Ensure it's a string
+    $comments = trim($_POST["comments"] ?? '');
+    $status = trim($_POST["status"] ?? '');
+    $date_approved = date('Y-m-d'); // Store only today or future dates
+
+    // Ensure valid input
+    if (empty($appointment_id) || empty($comments) || empty($status)) {
+        echo json_encode(["status" => "error", "message" => "All fields are required."]);
         exit();
     }
 
-    // Insert data into `approve` table
-    $stmt = $conn->prepare("INSERT INTO approve (Appointment_ID, status, Comments, Date_Approved) VALUES (?, ?, ?, ?)");
-    
-    if (!$stmt) {
+    // ** Fix: Ensure Appointment_ID is stored as a string **
+    $appointment_id = strval($appointment_id);
+
+    // ** Update the `appoint` table to set the status **
+    $update_stmt = $conn->prepare("UPDATE appoint SET status = ? WHERE Appointment_ID = ?");
+    if (!$update_stmt) {
+        echo json_encode(["status" => "error", "message" => "SQL prepare failed: " . $conn->error]);
+        exit();
+    }
+    $update_stmt->bind_param("ss", $status, $appointment_id);
+    if (!$update_stmt->execute()) {
+        echo json_encode(["status" => "failure", "message" => "Failed to update appointment."]);
+        exit();
+    }
+    $update_stmt->close();
+
+    // ** Insert into `approve` table **
+    $insert_stmt = $conn->prepare("INSERT INTO approve (Appointment_ID, status, Comments, Date_Approved) VALUES (?, ?, ?, ?)");
+    if (!$insert_stmt) {
         echo json_encode(["status" => "error", "message" => "SQL prepare failed: " . $conn->error]);
         exit();
     }
 
-    // Bind and execute the statement
-    $stmt->bind_param("isss", $appointment_id, $status, $comments, $date_approved);
+    // Bind as a string
+    $insert_stmt->bind_param("ssss", $appointment_id, $status, $comments, $date_approved);
 
-    if ($stmt->execute()) {
+    if ($insert_stmt->execute()) {
         echo json_encode(['status' => 'success']);
     } else {
-        echo json_encode(['status' => 'failure']);
+        echo json_encode(['status' => 'failure', 'message' => 'Database error: ' . $conn->error]);
     }
 
-    $stmt->close();
+    $insert_stmt->close();
 } else {
     echo json_encode(["status" => "error", "message" => "Invalid request method."]);
 }

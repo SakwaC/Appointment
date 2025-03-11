@@ -2,36 +2,34 @@
 session_start();
 require 'db_connection.php';
 
-header("Access-Control-Allow-Origin: http://127.0.0.1:5500");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, X-Lecturer-ID, X-Session-ID");
-header("Access-Control-Allow-Credentials: true");
+// Allow CORS for requests from your frontend
+header('Access-Control-Allow-Origin: http://127.0.0.1:5500');
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Allow-Headers: Content-Type, X-Lecturer-ID, X-Session-ID');
+header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Content-Type: application/json');
 
-$lecturerID = $_GET['lecturer_id'];
-$sessionID = session_id();
-
-if ($lecturerID) {
-    $_SESSION['lecturer_id'] = $lecturerID;
-    $_SESSION['is_authenticated'] = true;
+// Handle OPTIONS request (Preflight)
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(200);
+    exit(0);
 }
 
-if (!isset($_SESSION['lecturer_id']) || !$_SESSION['is_authenticated']) {
-    echo json_encode([
-        "status" => "error",
-        "message" => "Unauthorized access",
-        "session_status" => [
-            "active" => session_status() === PHP_SESSION_ACTIVE,
-            "lecturer_id_set" => isset($_SESSION['lecturer_id']),
-            "is_authenticated" => isset($_SESSION['is_authenticated']) ? $_SESSION['is_authenticated'] : false
-        ]
-    ]);
+// Check if lecturer_id is set
+if (!isset($_GET['lecturer_ID'])) {
+    echo json_encode(["status" => "error", "message" => "Missing lecturer_ID"]);
     exit;
 }
 
+$lecturerID = intval($_GET['lecturer_ID']);
+$sessionID = session_id();
+
+// Query lecturer's schedule
 $sql = "SELECT days, start_time, end_time, meeting_duration 
         FROM lecturer_schedule 
         WHERE lecturer_id = ? 
         ORDER BY FIELD(days, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday')";
+
 $stmt = $conn->prepare($sql);
 
 if (!$stmt) {
@@ -44,24 +42,17 @@ $stmt->execute();
 $result = $stmt->get_result();
 
 $schedules = [];
-while($row = $result->fetch_assoc()) {
+while ($row = $result->fetch_assoc()) {
     $schedules[] = $row;
 }
 
-if (count($schedules) > 0) {
-    echo json_encode([
-        "status" => "success",
-        "data" => $schedules,
-        "session_id" => $sessionID
-    ]);
-} else {
-    echo json_encode([
-        "status" => "error",
-        "message" => "No schedule found",
-        "lecturer_id" => $lecturerID,
-        "session_id" => $sessionID
-    ]);
-}
+echo json_encode([
+    "status" => count($schedules) > 0 ? "success" : "error",
+    "data" => $schedules,
+    "message" => count($schedules) > 0 ? "Schedules found" : "No schedule found",
+    "lecturer_ID" => $lecturerID,
+    "session_id" => $sessionID
+]);
 
 $stmt->close();
 $conn->close();

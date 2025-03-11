@@ -15,19 +15,19 @@ if ($conn->connect_error) {
 // Function to get total booked appointments
 function getBookedAppointments() {
     global $conn;
-    $query = "SELECT COUNT(*) as total FROM appoint WHERE status = 'booked'";
+    $query = "SELECT COUNT(*) as total FROM appoint";
     $result = $conn->query($query);
     $row = $result->fetch_assoc();
-    return $row['total'];
+    return $row['total'] ?? 0;  // Ensure it returns 0 if empty
 }
 
-// Function to get total canceled appointments
+// Function to get total rejected (canceled) appointments
 function getCanceledAppointments() {
     global $conn;
-    $query = "SELECT COUNT(*) as total FROM appoint WHERE status = 'canceled'";
+    $query = "SELECT COUNT(*) as total FROM approve WHERE status = 'Rejected'";
     $result = $conn->query($query);
     $row = $result->fetch_assoc();
-    return $row['total'];
+    return $row['total'] ?? 0;
 }
 
 // Function to get total registered students
@@ -36,7 +36,7 @@ function getRegisteredStudents() {
     $query = "SELECT COUNT(*) as total FROM students";
     $result = $conn->query($query);
     $row = $result->fetch_assoc();
-    return $row['total'];
+    return $row['total'] ?? 0;
 }
 
 // Function to get available lecturers
@@ -45,6 +45,6 @@ function getAvailableLecturers() {
     $query = "SELECT COUNT(*) as total FROM lecturer WHERE availability = 'available'";
     $result = $conn->query($query);
     $row = $result->fetch_assoc();
-    return $row['total'];
+    return $row['total'] ?? 0;
 }
 ?>

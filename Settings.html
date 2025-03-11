@@ -76,7 +76,7 @@
                 const lecturerId = localStorage.getItem('lecturer_id');
                 const sessionId = localStorage.getItem('session_id');
                 $.ajax({
-                    url: "http://localhost/Appointments/get_lecturer_schedule.php",
+                    url: "http://localhost/Appointments/get_schedule.php",
                     method: "GET",
                     xhrFields: {
                         withCredentials: true
@@ -86,6 +86,7 @@
                         'X-Lecturer-ID': lecturerId,
                         'X-Session-ID': sessionId
                     },
+                    crossDomain: true,
                     data: {
                         lecturer_id: lecturerId,
                         session_id: sessionId

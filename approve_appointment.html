@@ -12,9 +12,7 @@
 <style>
     h2 { text-align: center; color: blue; }
     label { font-weight: bold; }
-    body{
-        background-color: lightblue;
-    }
+    body { background-color: lightblue; }
 </style>
 
 <body>
@@ -29,6 +27,10 @@
                 <label for="lecturerComments">Comments</label>
                 <textarea class="form-control" id="lecturerComments" name="comments" rows="3" placeholder="Enter your comments here" required></textarea>
             </div>
+            <div class="form-group">
+                <label for="dateApproved">Approval Date</label>
+                <input type="date" class="form-control" id="dateApproved" name="date_approved" required>
+            </div>
             <input type="hidden" id="status" name="status">
             <div class="text-center">
                 <button type="button" class="btn btn-success" onclick="setStatus('approved')">Approve</button>
@@ -38,6 +40,12 @@
     </div>
 
     <script>
+        // Allow only today or future dates in the date picker
+        document.addEventListener("DOMContentLoaded", function() {
+            let today = new Date().toISOString().split("T")[0];
+            document.getElementById("dateApproved").setAttribute("min", today);
+        });
+
         function setStatus(status) {
             $("#status").val(status);
             submitForm();
@@ -52,12 +60,11 @@
                 data: formData,
                 dataType: "json",
                 success: function(response) {
-                    // Directly access the response as an object and return to the dashboard
                     if (response.status === "success") {
-                        alert(' successful Submitted!');
+                        alert('Appointment successfully processed!');
                         window.location.href = 'Lecturer_dashboard.html';
                     } else {
-                        alert(' failed. Please try again.');
+                        alert('Failed: ' + response.message);
                     }
                 },
                 error: function(xhr, status, error) {
