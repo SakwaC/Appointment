@@ -24,57 +24,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // Check if lecturer is logged in
-error_log('Current session data: ' . print_r($_SESSION, true));
-
 if (!isset($_SESSION['lecturer_id'])) {
     http_response_code(401);
-    echo json_encode(["error" => "Lecturer not logged in", "session_data" => $_SESSION]);
+    echo json_encode(["error" => "Lecturer not logged in"]);
     exit;
 }
 
 $lecturerID = $_SESSION['lecturer_id'];
 
 if (!$conn) {
-    error_log("Database connection failed: " . mysqli_connect_error());
     echo json_encode(["error" => "Database connection failed"]);
     exit;
 }
 
-// Get lecturer ID from lecturer table
-$lecturer_query = "SELECT id FROM lecturer WHERE lecturer_id = '1010'";
-$lecturer_result = $conn->query($lecturer_query);
+//  Get the unique `id` from the lecturer table
+$lecturer_query = "SELECT id FROM lecturer WHERE lecturer_id = ?";
+$stmt = $conn->prepare($lecturer_query);
+$stmt->bind_param("s", $lecturerID);
+$stmt->execute();
+$lecturer_result = $stmt->get_result();
 
 if ($lecturer_result && $lecturer_result->num_rows > 0) {
     $lecturer_row = $lecturer_result->fetch_assoc();
-    $lecturerID = $lecturer_row['id'];
+    $uniqueLecturerID = $lecturer_row['id'];
 
-    // Query the booked appointments
-    $sql = "SELECT 
-        a.Appointment_ID,
-        a.student_id,
-        s.name as student_name,  
-        a.department,
-        a.appointment_date,
-        a.time_of_appointment,
-        a.Description
+    //  Fetch appointments including status
+    $sql = "SELECT a.*, s.Student_ID, s.Name as student_name 
         FROM appoint a
         LEFT JOIN students s ON a.student_id = s.Student_ID
-        WHERE a.lecturer_id = ?
+        WHERE a.lecturer_id = ? AND a.status = 'Pending'
         ORDER BY a.appointment_date ASC";
-
-    error_log("Lecturer ID being queried: " . $lecturerID);
 
     $stmt = $conn->prepare($sql);
     if (!$stmt) {
-        error_log("SQL Prepare Error: " . $conn->error);
-        echo json_encode([
-            "error" => "Failed to prepare SQL statement",
-            "details" => $conn->error
-        ]);
+        echo json_encode(["error" => "Failed to prepare SQL", "details" => $conn->error]);
         exit;
     }
-
-    $stmt->bind_param("i", $lecturerID);
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $lecturerID);
     $stmt->execute();
     $result = $stmt->get_result();
 
@@ -86,11 +73,7 @@ if ($lecturer_result && $lecturer_result->num_rows > 0) {
     $stmt->close();
     $conn->close();
 
-    if (empty($appoint)) {
-        echo json_encode(["message" => "No booked appointments"]);
-    } else {
-        echo json_encode($appoint);
-    }
+    echo json_encode(empty($appoint) ? ["message" => "No Pending appointments"] : $appoint);
 } else {
     echo json_encode(["error" => "Lecturer not found"]);
     exit;

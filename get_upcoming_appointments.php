@@ -1,54 +1,57 @@
 <?php
-session_start();
-require 'db_connection.php';
+if (session_status() == PHP_SESSION_NONE) {
+    session_start();
+}
 
-// Allow CORS for cross-origin requests
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
+// Set CORS headers
+header('Access-Control-Allow-Origin: http://127.0.0.1:5500'); 
+header('Access-Control-Allow-Credentials: true');
+header('Access-Control-Allow-Headers: Content-Type, X-Session-ID, X-Student-ID, PHPSESSID');
+header('Access-Control-Allow-Methods: GET, OPTIONS');
+header('Content-Type: application/json');
+
+// Debugging logs
+error_log("Session ID: " . session_id());
+error_log("SESSION DATA: " . print_r($_SESSION, true));
+
+// Validate session ID from request
+$sessionId = $_SERVER['HTTP_X_SESSION_ID'] ?? null;
+
+
+// Handle preflight request (OPTIONS)
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-// Check if the user is logged in (either student or lecturer)
-if (!isset($_SESSION['lecturer_id']) && !isset($_SESSION['student_id'])) {
-    echo json_encode(["error" => "Unauthorized access"]);
-    exit;
-}
+// Validate Student ID
+$studentId = $_SERVER['HTTP_X_STUDENT_ID'] ?? $_GET['student_id'] ?? null;
 
-// Define query based on user type
-if (isset($_SESSION['lecturer_id'])) {
-    $userID = $_SESSION['lecturer_id'];
-    $sql = "SELECT a.appointment_id, a.student_id, s.username AS student_name, 
-                   l.username AS lecturer_name, l.phone_number AS lecturer_phone, 
-                   a.department, a.appointment_date, 
-                   a.time_of_appointment, a.appointment_description 
-            FROM appointments a
-            JOIN students s ON a.student_id = s.student_id
-            JOIN lecturers l ON a.lecturer_id = l.lecturer_id
-            WHERE a.lecturer_id = ? 
-            AND a.status = 'confirmed'  
-            AND a.appointment_date >= CURDATE() 
-            ORDER BY a.appointment_date ASC, a.time_of_appointment ASC";
-} else {
-    $userID = $_SESSION['student_id'];
-    $sql = "SELECT a.appointment_id, a.student_id, s.username AS student_name, 
-                   l.username AS lecturer_name, l.phone_number AS lecturer_phone, 
-                   a.department, a.appointment_date, 
-                   a.time_of_appointment, a.appointment_description 
-            FROM appointments a
-            JOIN students s ON a.student_id = s.student_id
-            JOIN lecturers l ON a.lecturer_id = l.lecturer_id
-            WHERE a.student_id = ? 
-            AND a.status = 'confirmed'  
-            AND a.appointment_date >= CURDATE() 
-            ORDER BY a.appointment_date ASC, a.time_of_appointment ASC";
-}
+// Database connection
+require 'db_connection.php';
+
+// Fetch upcoming appointments
+$sql = "SELECT
+            a.Appointment_ID,
+            a.student_id,
+            s.Name AS student_name,
+            l.name AS lecturer_name,
+            l.contact_No AS lecturer_phone,
+            a.department,
+            a.appointment_date,
+            a.time_of_appointment,
+            a.Description AS appointment_description
+        FROM appoint a
+        JOIN students s ON a.student_id = s.Student_ID
+        JOIN lecturer l ON a.lecturer_id = l.lecturer_ID
+        WHERE a.student_id = ?
+        AND a.status = 'approved'
+        AND a.appointment_date >= CURDATE()
+        ORDER BY a.appointment_date ASC, a.time_of_appointment ASC";
 
 $stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $userID);
+$stmt->bind_param("s", $studentId);
 $stmt->execute();
 $result = $stmt->get_result();
 
@@ -57,5 +60,8 @@ while ($row = $result->fetch_assoc()) {
     $appointments[] = $row;
 }
 
-echo json_encode($appointments);
-?>
+// Return JSON response
+echo json_encode($appointments ?: ["message" => "No upcoming appointments found"]);
+
+$stmt->close();
+$conn->close();

@@ -6,7 +6,7 @@
     <title>Booked Appointments</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="icon" href="data">
+    
 </head>
 <body class="bg-light">
     <div class="container mt-4">
@@ -30,66 +30,69 @@
     </div>
 
     <script>
-        $(document).ready(function () {
-            const sessionId = localStorage.getItem('session_id');
-            const lecturerId = localStorage.getItem('lecturer_id');
+    $(document).ready(function () {
+        const sessionId = localStorage.getItem('session_id');
+        const lecturerId = localStorage.getItem('lecturer_id');
+         console.log("Current lecturer ID being sent:", lecturerId);
 
-            if (!sessionId || !lecturerId) {
-                window.location.href = 'lecturer_login.html';
-                return;
-            }
+        if (!sessionId || !lecturerId) {
+            window.location.href = 'lecturer_login.html';
+            return;
+        }
 
-            function refreshBookedAppointments() {
-                $.ajax({
-                    url: "http://localhost/Appointments/get_booked_appointment.php",
-                    type: "GET",
-                    dataType: "json",
-                    xhrFields: {
-                        withCredentials: true
-                    },
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'X-Session-ID': sessionId,
-                        'X-Lecturer-ID': lecturerId
-                    },
-                    success: function(response) {
-                        let appointTable = $("#appointTable");
-                        appointTable.empty();
+        function refreshBookedAppointments() {
+            console.log("Refreshing booked appointments...");
+            $.ajax({
+                url: "http://localhost/Appointments/get_booked_appointment.php",
+                type: "GET",
+                dataType: "json",
+                xhrFields: {
+                    withCredentials: true
+                },
+                headers: {
+                    'X-Session-ID': sessionId,
+                    'X-Lecturer-ID': lecturerId
+                },
+                success: function(response) {
+                    console.log("Received response:", response);
 
-                        if (typeof response === "object" && !Array.isArray(response)) {
-                            console.error("Received an object instead of an array:", response);
-                            appointTable.append(`<tr><td colspan='7' class='text-center text-danger'>${response.error || response.message || "Unexpected error"}</td></tr>`);
-                            return;
-                        }
+                    let appointTable = $("#appointTable");
+                    appointTable.empty();
 
-                        if (!Array.isArray(response) || response.length === 0) {
-                            appointTable.append("<tr><td colspan='7' class='text-center text-danger'>No booked appointments</td></tr>");
-                            return;
-                        }
-
-                        response.forEach(appointment => {
-                            let row = `<tr>
-                                <td>${appointment.Appointment_ID || 'N/A'}</td>
-                                <td>${appointment.student_id || 'N/A'}</td>
-                                <td>${appointment.student_name || 'N/A'}</td>
-                                <td>${appointment.department || 'N/A'}</td>
-                                <td>${appointment.appointment_date || 'N/A'}</td>
-                                <td>${appointment.time_of_appointment || 'N/A'}</td>
-                                <td>${appointment.Description || 'N/A'}</td>
-                            </tr>`;
-                            appointTable.append(row);
-                        });
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("AJAX Error:", error);
-                        $("#appointTable").html(`<tr><td colspan='7' class='text-center text-danger'>Error fetching data. Please try again.</td></tr>`);
+                    if (!Array.isArray(response)) {
+                        let message = response.message || "Error fetching data";
+                        console.log(message);
+                        appointTable.append(`<tr><td colspan='7' class='text-center text-danger'>${message}</td></tr>`);
+                        return;
                     }
-                });
-            }
 
-            refreshBookedAppointments();
-        });
+                    if (response.length === 0) {
+                        appointTable.append("<tr><td colspan='7' class='text-center text-danger'>No pending appointments</td></tr>");
+                        return;
+                    }
+
+                    response.forEach(appointment => {
+                        let row = `<tr>
+                            <td>${appointment.Appointment_ID || 'N/A'}</td>
+                            <td>${appointment.student_id || 'N/A'}</td>
+                            <td>${appointment.student_name || 'N/A'}</td>
+                            <td>${appointment.department || 'N/A'}</td>
+                            <td>${appointment.appointment_date || 'N/A'}</td>
+                            <td>${appointment.time_of_appointment || 'N/A'}</td>
+                            <td>${appointment.Description || 'N/A'}</td>
+                        </tr>`;
+                        appointTable.append(row);
+                    });
+                },
+                error: function(xhr, status, error) {
+                    console.error("AJAX Error:", xhr.responseText || error);
+                    $("#appointTable").html(`<tr><td colspan='7' class='text-center text-danger'>Error fetching data. Please try again.</td></tr>`);
+                }
+            });
+        }
+
+        refreshBookedAppointments();
+    });
     </script>
 </body>
 </html>

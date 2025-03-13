@@ -24,7 +24,7 @@ function getBookedAppointments() {
 // Function to get total rejected (canceled) appointments
 function getCanceledAppointments() {
     global $conn;
-    $query = "SELECT COUNT(*) as total FROM approve WHERE status = 'Rejected'";
+    $query = "SELECT COUNT(*) as total FROM appoint WHERE status = 'Rejected'";
     $result = $conn->query($query);
     $row = $result->fetch_assoc();
     return $row['total'] ?? 0;

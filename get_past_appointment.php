@@ -28,19 +28,17 @@ if (!$conn) {
 
 $sql = "SELECT 
         a.appointment_id,
-        a.lecturer_id,
+        l.Lecturer_ID,
+        l.Name AS lecturer_name,
+        l.Contact_No AS lecturer_contact,
         a.Department,
         a.appointment_date,
         a.time_of_appointment,
-        a.Description,
-        l.Name AS lecturer_name,
-        l.Contact_No AS lecturer_contact
+        a.Description
     FROM appoint a
-    LEFT JOIN lecturer l ON a.lecturer_id = l.id
+    INNER JOIN lecturer l ON a.lecturer_id = l.Lecturer_ID
     WHERE a.student_id = ?
-    ORDER BY a.appointment_date DESC
-    ";
-
+    ORDER BY a.appointment_date DESC";
 
 
 $stmt = $conn->prepare($sql);

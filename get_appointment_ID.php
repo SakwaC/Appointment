@@ -4,7 +4,7 @@ header("Access-Control-Allow-Methods: GET, POST, OPTIONS"); // Allow specific re
 header("Access-Control-Allow-Headers: Content-Type, Authorization"); // Allow certain headers
 header("Content-Type: application/json");
 
-include 'db_connection.php'; // Ensure database connection is included
+include 'db_connection.php'; 
 
 // Check if the connection is successful
 if (!$conn) {

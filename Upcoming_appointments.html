@@ -24,41 +24,73 @@
                 </tr>
             </thead>
             <tbody id="appointmentsTable">
-                <!-- Appointments will be dynamically loaded here -->
+                <!-- Data will be dynamically inserted here -->
             </tbody>
         </table>
     </div>
 
     <script>
-        $(document).ready(function() {
-            $.getJSON("http://localhost/Appointments/get_upcoming_appointments.php", function(data) {
+    $(document).ready(function() {
+        const studentId = localStorage.getItem('student_id');
+        const sessionId = localStorage.getItem('session_id');
+
+        if (!studentId || !sessionId) {
+            console.warn("Missing credentials. Redirecting...");
+            window.location.href = 'student_login.html';
+            return;
+        }
+
+        console.log("Fetching appointments for Student ID:", studentId);
+        console.log("Fetching appointments for sessionId:", sessionId);
+
+        $.ajax({
+            url: "http://localhost/Appointments/get_upcoming_appointments.php",
+            type: "GET",
+            dataType: "json",
+            xhrFields: { withCredentials: true },
+            crossDomain: true,
+            headers: {
+                'X-Student-ID': studentId,
+                'X-Session-ID': sessionId
+            },
+            success: function(response) {
                 let tableBody = $("#appointmentsTable");
                 tableBody.empty();
 
-                if (data.length === 0) {
-                    tableBody.append("<tr><td colspan='8' class='text-center'>No upcoming appointments</td></tr>");
-                } else {
-                    $.each(data, function(index, appointment) {
-                        let row = `
-                            <tr>
-                                <td>${appointment.appointment_id}</td>
-                                <td>${appointment.student_name}</td>
-                                <td>${appointment.lecturer_name}</td>
-                                <td>${appointment.lecturer_phone}</td>
-                                <td>${appointment.department}</td>
-                                <td>${appointment.appointment_date}</td>
-                                <td>${appointment.time_of_appointment}</td>
-                                <td>${appointment.appointment_description}</td>
-                            </tr>
-                        `;
-                        tableBody.append(row);
-                    });
+                console.log("Server Response:", response);
+
+                if (response.error) {
+                    tableBody.append(`<tr><td colspan='8' class='text-danger text-center'>${response.error}</td></tr>`);
+                    return;
                 }
-            }).fail(function(jqXHR, textStatus, errorThrown) {
+
+                if (!Array.isArray(response) || response.length === 0) {
+                    tableBody.append("<tr><td colspan='8' class='text-center'>No upcoming appointments found</td></tr>");
+                    return;
+                }
+
+                response.forEach(appointment => {
+                    let row = `
+                        <tr>
+                            <td>${appointment.Appointment_ID || 'N/A'}</td>
+                            <td>${appointment.student_name || 'N/A'}</td>
+                            <td>${appointment.lecturer_name || 'N/A'}</td>
+                            <td>${appointment.lecturer_phone || 'N/A'}</td>
+                            <td>${appointment.department || 'N/A'}</td>
+                            <td>${appointment.appointment_date || 'N/A'}</td>
+                            <td>${appointment.time_of_appointment || 'N/A'}</td>
+                            <td>${appointment.appointment_description || 'N/A'}</td>
+                        </tr>
+                    `;
+                    tableBody.append(row);
+                });
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
                 console.error("AJAX Error:", textStatus, errorThrown);
-                $("#appointmentsTable").append("<tr><td colspan='8' class='text-center text-danger'>Error loading data</td></tr>");
-            });
+                $("#appointmentsTable").append(`<tr><td colspan='8' class='text-danger text-center'>Error loading appointments</td></tr>`);
+            }
         });
+    });
     </script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 <?php
 // Include database connection
-include 'db_connect.php';
+include 'db_connection.php';
 
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
