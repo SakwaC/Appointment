@@ -24,9 +24,26 @@
             border-radius: 10px;
             background: #f9f9f9;
         }
+        .back-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: black;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .back-button:hover {
+            background-color: #333;
+        }
     </style>
 </head>
 <body>
+    <button class="back-button" onclick="window.location.href='dashboard.html'">Back</button>
+
     <div class="container">
         <h1>Generate Student Report</h1>
         <form id="reportForm">

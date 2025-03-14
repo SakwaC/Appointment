@@ -39,12 +39,28 @@
         color: red;
         font-weight: bold;
     }
+    .back-button {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background-color: black;
+        color: white;
+        padding: 5px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .back-button:hover {
+        background-color: #333;
+    }
 </style>
 <body>
     <div class="logo">
         <img src="Ku_logo.jpeg" alt="System Logo" width="100">
     </div>
-    
+    <!-- Back Button -->
+    <button class="back-button" onclick="window.location.href='land_in.html'">Back</button>
+
     <div class="container">
         <div class="login-container">
             <h3 class="text-center mb-4">Lecturer Login</h3>
@@ -155,3 +171,4 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
+

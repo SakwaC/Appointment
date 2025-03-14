@@ -1,0 +1,4 @@
+[13-Mar-2025 20:01:53 Europe/Berlin] PHP Warning:  preg_match(): Compilation failed: quantifier does not follow a repeatable item at offset 1 in C:\Users\pc\Downloads\downloads\htdocs\Appointments\lecturer_reg.php on line 59
+[13-Mar-2025 20:03:01 Europe/Berlin] PHP Warning:  preg_match(): Compilation failed: quantifier does not follow a repeatable item at offset 1 in C:\Users\pc\Downloads\downloads\htdocs\Appointments\lecturer_reg.php on line 59
+[13-Mar-2025 20:30:35 Europe/Berlin] PHP Warning:  preg_match(): Compilation failed: quantifier does not follow a repeatable item at offset 1 in C:\Users\pc\Downloads\downloads\htdocs\Appointments\lecturer_reg.php on line 59
+[13-Mar-2025 20:55:18 Europe/Berlin] PHP Warning:  preg_match(): Compilation failed: quantifier does not follow a repeatable item at offset 1 in C:\Users\pc\Downloads\downloads\htdocs\Appointments\lecturer_reg.php on line 59

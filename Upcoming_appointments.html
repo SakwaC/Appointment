@@ -6,8 +6,29 @@
     <title>Upcoming Appointments</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>  
+
+    <style>
+        .back-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: black;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .back-button:hover {
+            background-color: #333;
+        }
+    </style>
 </head>
 <body>
+    <button class="back-button" onclick="window.location.href='Dashboard.html'">Back</button>
+
     <div class="container mt-5">
         <h2 class="text-center text-primary">Upcoming Appointments</h2>
         <table class="table table-bordered mt-3">

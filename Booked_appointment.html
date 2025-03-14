@@ -6,9 +6,32 @@
     <title>Booked Appointments</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        .back-button {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background-color: black;
+        color: white;
+        padding: 5px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .back-button:hover {
+        background-color: #333;
+    }
+    body{
+        background-color: aliceblue;
+    }
+    </style>
     
 </head>
-<body class="bg-light">
+<body>
+     <!-- Back Button -->
+     <button class="back-button" onclick="window.location.href='lecturer_dashboard.html'">Back</button>
+
     <div class="container mt-4">
         <h2 class="text-center text-primary">Booked Appointments</h2>
         <table class="table table-bordered mt-3">
