@@ -282,9 +282,12 @@
     
                 // Name Validation
                 let name = $('#name').val();
-                if(!name.trim()){
-                    $('#name').after('<small class="error-message" style="color:red;">This field is required</small>');
-                    isValid = false;
+                if (!name.trim()) {
+                $('#name').after('<small class="error-message" style="color:red;">This field is required</small>');
+                isValid = false;
+                } else if (!/^[A-Za-z\s]+$/.test(name)) { // Check for letters and spaces only
+                $('#name').after('<small class="error-message" style="color:red;">invalid Name format</small>');
+                isValid = false;
                 }
     
                 // Email Validation
