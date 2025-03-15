@@ -11,10 +11,28 @@ if ($sessionId && $lecturerId) {
 
 require 'db_connection.php';
 
-header("Access-Control-Allow-Origin: http://127.0.0.1:5500");
-header("Access-Control-Allow-Credentials: true");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Session-ID, X-Lecturer-ID");
+// Define allowed origins
+$allowedOrigins = [
+    'http://localhost:3000',
+    'http://127.0.0.1:5500',
+    // Add more origins here if needed
+];
+
+// Get the origin from the request
+$origin = $_SERVER['HTTP_ORIGIN'] ?? null;
+
+// Check if the origin is allowed
+if (in_array($origin, $allowedOrigins)) {
+    header("Access-Control-Allow-Origin: " . $origin);
+    header("Access-Control-Allow-Credentials: true");
+    header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Session-ID, X-Lecturer-ID");
+} else {
+    // Optionally, handle invalid origin (e.g., log, send error)
+    // header("HTTP/1.1 403 Forbidden");
+    // exit;
+}
+
 header("Content-Type: application/json");
 
 // Handle preflight request
@@ -37,7 +55,7 @@ if (!$conn) {
     exit;
 }
 
-//  Get the unique `id` from the lecturer table
+// Get the unique `id` from the lecturer table
 $lecturer_query = "SELECT id FROM lecturer WHERE lecturer_id = ?";
 $stmt = $conn->prepare($lecturer_query);
 $stmt->bind_param("s", $lecturerID);
@@ -48,12 +66,12 @@ if ($lecturer_result && $lecturer_result->num_rows > 0) {
     $lecturer_row = $lecturer_result->fetch_assoc();
     $uniqueLecturerID = $lecturer_row['id'];
 
-    //  Fetch appointments including status
+    // Fetch appointments including status
     $sql = "SELECT a.*, s.Student_ID, s.Name as student_name 
-        FROM appoint a
-        LEFT JOIN students s ON a.student_id = s.Student_ID
-        WHERE a.lecturer_id = ? AND a.status = 'Pending'
-        ORDER BY a.appointment_date ASC";
+            FROM appoint a
+            LEFT JOIN students s ON a.student_id = s.Student_ID
+            WHERE a.lecturer_id = ? AND a.status = 'Pending'
+            ORDER BY a.appointment_date ASC";
 
     $stmt = $conn->prepare($sql);
     if (!$stmt) {

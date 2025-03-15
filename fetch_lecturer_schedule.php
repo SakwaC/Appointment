@@ -12,7 +12,7 @@ if (!$conn) {
     exit();
 }
 
-$query = "SELECT day, start_time, end_time FROM lecturer_schedule";
+$query = "SELECT days, start_time, end_time FROM lecturer_schedule";
 $result = $conn->query($query);
 
 if (!$result) {

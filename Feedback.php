@@ -58,7 +58,7 @@
     </style>
 </head>
 <body>
-    <button class="back-button" onclick="window.location.href='Dashboard.html'">Back</button>
+    <button class="back-button" onclick="window.location.href='Dashboard.php'">Back</button>
     <div class="container">
        
         <h1 class="text-center">Feedback</h1>

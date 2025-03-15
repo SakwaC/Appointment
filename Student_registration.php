@@ -110,7 +110,7 @@
         <img src="Ku_logo.jpeg" alt="System Logo" width="100">
     </div>
 
-    <button class="back-button" onclick="window.location.href='land_in.html'">Back</button>
+    <button class="back-button" onclick="window.location.href='land_in.php'">Back</button>
 
     <div class="form-container">
         <h2>Student Registration</h2>
@@ -353,7 +353,7 @@
     
                 $.ajax({
                     type: 'POST',
-                    url: 'http://localhost/Appointments/Student_reg.php',
+                    url: 'http://localhost/Appointments/Student_reg(back).php',
                     data: formData,
                     success: function(response) {
                         let alertClass = response.status === "success" ? "alert-success" : "alert-danger";
@@ -363,7 +363,7 @@
     
                         if (response.status === "success") {
                             setTimeout(function() {
-                                window.location.href = "student_login.html"; // Redirect after 3 seconds
+                                window.location.href = "student_login.php"; // Redirect after 3 seconds
                             }, 3000);
                         }
                     },

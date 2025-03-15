@@ -46,7 +46,7 @@
         <p>The Kenyatta University Student-Lecturer Appointment System is designed to streamline communication and scheduling between students and lecturers. 
            Our platform ensures easy appointment booking, reducing scheduling conflicts and enhancing academic engagement.</p>
         <p>With a user-friendly interface, both students and lecturers can manage their time efficiently, ensuring productive consultations and better academic outcomes.</p>
-        <a href="land_in.html" class="btn btn-home">Home</a>
+        <a href="land_in.php" class="btn btn-home">Home</a>
     </div>
 </body>
 </html>

@@ -41,7 +41,7 @@
 </head>
 <body>
      <!-- Back Button -->
-     <button class="back-button" onclick="window.location.href='lecturer_dashboard.html'">Back</button>
+     <button class="back-button" onclick="window.location.href='lecturer_dashboard.php'">Back</button>
 
     <div class="container mt-4">
         <h2 class="text-center text-primary">Booked Appointments</h2>

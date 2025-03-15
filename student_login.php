@@ -1,95 +1,177 @@
-<?php
-session_start(); // Start the session
-
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-// Allow cross-origin requests
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
-
-// Handle CORS preflight requests
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit();
-}
-
-// Ensure request is POST
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode(["status" => "error", "message" => "Method Not Allowed"]);
-    exit;
-}
-
-// Validate input fields
-if (!isset($_POST['Student_ID']) || !isset($_POST['password'])) {
-    http_response_code(400);
-    echo json_encode(["status" => "error", "message" => "Missing Student_ID or Password."]);
-    exit;
-}
-
-// Database connection
-$host = "localhost"; 
-$username = "root";  
-$password = "";      
-$database = "appointment"; 
-
-$conn = new mysqli($host, $username, $password, $database);
-
-// Check database connection
-if ($conn->connect_error) {
-    http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Database connection failed: " . $conn->connect_error]);
-    exit;
-}
-
-// Get user input & sanitize
-$studentID = trim($_POST['Student_ID']);
-$password = trim($_POST['password']);
-
-// Prepare SQL statement to prevent SQL injection
-$sql = "SELECT password FROM students WHERE student_id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("s", $studentID);
-$stmt->execute();
-$result = $stmt->get_result();
-
-
-if ($result->num_rows > 0) {
-    $user = $result->fetch_assoc();
-    $hashedPassword = $user['password']; // Retrieve stored hashed password
-
-    // Check if the password is hashed; if not, hash it and update DB
-    if (!password_get_info($hashedPassword)['algo']) {
-        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-
-        // Update the database with the hashed password
-        $update_sql = "UPDATE students SET password = ? WHERE student_id = ?";
-        $update_stmt = $conn->prepare($update_sql);
-        $update_stmt->bind_param("ss", $hashedPassword, $studentID);
-        $update_stmt->execute();
-        $update_stmt->close();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Login</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> 
+</head>
+<style>
+    body {
+        background-color: lightblue;
     }
-
-    // Verify hashed password
-    if (password_verify($password, $hashedPassword)) {
-        $_SESSION['student_id'] = $studentID;
-        echo json_encode([
-            "status" => "success",
-            "redirect" => "Dashboard.html",
-            "student_id" => $studentID  // Include student_id in response
-        ]);
-    } else {
-        http_response_code(401);
-        echo json_encode(["status" => "error", "message" => "Invalid login credentials."]);
+    .login-container {
+        max-width: 400px;
+        margin: 100px auto; 
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        position: relative;
     }
-} else {
-    http_response_code(401);
-    echo json_encode(["status" => "error", "message" => "User not found."]);
-}
+    h3 {
+        text-decoration: underline;
+    }
+    label {
+        font-weight: bold;
+    }
+    .logo {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+    }
+    p {
+        text-align: center;
+    }
+    #feedback {
+        display: none;
+        text-align: center;
+        color: red;
+        font-weight: bold;
+    }
+    .back-button {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background-color: black;
+        color: white;
+        padding: 5px 15px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    .back-button:hover {
+        background-color: #333;
+    }
+</style>
+<body>
+    <div class="logo">
+        <img src="Ku_logo.jpeg" alt="System Logo" width="100">
+    </div>
 
-// Close connection
-$stmt->close();
-$conn->close();
-?>
+    <!-- Back Button -->
+    <button class="back-button" onclick="window.location.href='land_in.php'">Back</button>
+
+    <div class="container">
+        <div class="login-container">
+            <h3 class="text-center mb-4">Student Login</h3>
+            <p id="feedback"></p> <!-- Feedback message area -->
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="idNumber">ID Number</label>
+                    <input type="text" class="form-control" id="idNumber" name="Student_ID" placeholder="Enter ID Number" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Enter Password" required>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Log In</button>
+                <p><a href="#" data-toggle="modal" data-target="#forgotPasswordModal">Forgot Password?</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div class="modal fade" id="forgotPasswordModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reset Password</h5>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="forgotPasswordForm">
+                        <div class="form-group">
+                            <label for="resetId">Student ID</label>
+                            <input type="text" class="form-control" id="resetId" name="Student_ID" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newPassword">New Password</label>
+                            <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                        </div>
+                        <button type="submit" class="btn btn-success btn-block">Reset Password</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $('#loginForm').submit(function (event) {
+                event.preventDefault();
+                var formData = {
+                    Student_ID: $('#idNumber').val().trim(),
+                    password: $('#password').val().trim()
+                };
+                $.ajax({
+                    type: "POST",
+                    url: "http://localhost/Appointments/student_login(back).php",
+                    data: formData,
+                    dataType: "json",
+                    success: function(response) {
+                        console.log("Login Response:", response);
+                        if(response.status === "success") {
+                            console.log("Session ID:", response.session_id); // Check session ID
+                            localStorage.setItem('student_id', response.student_id);
+                            localStorage.setItem('session_id', response.session_id);
+                            console.log("Stored Session ID:", localStorage.getItem('session_id')); 
+                            window.location.href = "Dashboard.php";
+                        } else {
+                            $("#feedback").text(response.message).css("color", "red").show();
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error(xhr.responseText);
+                        try {
+                            var response = JSON.parse(xhr.responseText);
+                            $("#feedback").text(response.message).css("color", "red").show();
+                        } catch (e) {
+                            $("#feedback").text("An unexpected error occurred. Please try again.").css("color", "red").show();
+                        }
+                    }
+                });
+            });
+
+            $('#forgotPasswordForm').submit(function (event) {
+                event.preventDefault();
+                var resetData = JSON.stringify({
+                    student_id: $('#resetId').val().trim(),
+                    new_password: $('#newPassword').val().trim()
+                });
+
+                $.ajax({
+                    type: "POST",
+                    url: "http://localhost/Appointments/reset_password.php",
+                    data: resetData,
+                    contentType: "application/json",
+                    dataType: "json",
+                    success: function (response) {
+                        alert(response.message);
+                        if (response.status === "success") {
+                            $('#forgotPasswordModal').modal('hide');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error(xhr.responseText);
+                        alert("An error occurred.");
+                    }
+                });
+            });
+        });
+    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
+

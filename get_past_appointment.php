@@ -2,17 +2,35 @@
 session_start();
 require 'db_connection.php';
 
-header("Access-Control-Allow-Origin: http://127.0.0.1:5500");
-header("Access-Control-Allow-Methods: GET, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, X-Student-ID, X-Session-ID");
-header("Access-Control-Allow-Credentials: true");
-header("Content-Type: application/json");
+// Define allowed origins
+$allowedOrigins = [
+    'http://localhost:3000',
+    'http://127.0.0.1:5500',
+    // Add more origins here if needed
+];
 
+// Get the origin from the request
+$origin = $_SERVER['HTTP_ORIGIN'] ?? null;
+
+// Check if the origin is allowed
+if (in_array($origin, $allowedOrigins)) {
+    header("Access-Control-Allow-Origin: " . $origin);
+    header("Access-Control-Allow-Methods: GET, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type, X-Student-ID, X-Session-ID");
+    header("Access-Control-Allow-Credentials: true");
+} else {
+    // Optionally, handle invalid origin (e.g., log, send error)
+    // header("HTTP/1.1 403 Forbidden");
+    // exit;
+}
+
+header("Content-Type: application/json");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
+
 $studentID = $_SERVER['HTTP_X_STUDENT_ID'] ?? null;
 
 if (!$studentID) {
@@ -27,19 +45,18 @@ if (!$conn) {
 }
 
 $sql = "SELECT 
-        a.appointment_id,
-        l.Lecturer_ID,
-        l.Name AS lecturer_name,
-        l.Contact_No AS lecturer_contact,
-        a.Department,
-        a.appointment_date,
-        a.time_of_appointment,
-        a.Description
-    FROM appoint a
-    INNER JOIN lecturer l ON a.lecturer_id = l.Lecturer_ID
-    WHERE a.student_id = ?
-    ORDER BY a.appointment_date DESC";
-
+            a.appointment_id,
+            l.Lecturer_ID,
+            l.Name AS lecturer_name,
+            l.Contact_No AS lecturer_contact,
+            a.Department,
+            a.appointment_date,
+            a.time_of_appointment,
+            a.Description
+        FROM appoint a
+        INNER JOIN lecturer l ON a.lecturer_id = l.Lecturer_ID
+        WHERE a.student_id = ?
+        ORDER BY a.appointment_date DESC";
 
 $stmt = $conn->prepare($sql);
 if (!$stmt) {
@@ -60,7 +77,6 @@ while ($row = $result->fetch_assoc()) {
 
 error_log("Total appointments found: " . count($appoint));
 
-// Debugging: Check what is being returned
 if (empty($appoint)) {
     echo json_encode(["data" =>[], "message" => "No past appointments found"]);
     exit;
@@ -68,7 +84,6 @@ if (empty($appoint)) {
     echo json_encode(["data" => $appoint, "message" => "Success"]);
 }
 
-// Close database resources
 $stmt->close();
 $conn->close();
 ?>

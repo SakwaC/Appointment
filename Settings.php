@@ -38,7 +38,7 @@
     </style>
 </head>
 <body>
-    <button class="back-button" onclick="window.location.href='lecturer_dashboard.html'">Back</button>
+    <button class="back-button" onclick="window.location.href='lecturer_dashboard.php'">Back</button>
     <div class="container mt-5">
         <h2 class="text-center text-primary">Set Availability & Schedule</h2>
 

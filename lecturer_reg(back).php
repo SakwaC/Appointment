@@ -59,8 +59,8 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 }
 
 // Validate phone number (Must start with +2547XXXXXXXX)
-if (!preg_match('/^\+2547\d{8}$/', $contact_No)) {
-    echo json_encode(["status" => "error", "field" => "contactNo", "message" => "Invalid phone number format. Must start with +2547XXXXXXXX."]);
+if (!preg_match('/^\+254\d{9}$/', $contact_No)) {
+    echo json_encode(["status" => "error", "field" => "contactNo", "message" => "Invalid phone number format. Must start with +254XXXXXXXX."]);
     exit();
 }
 

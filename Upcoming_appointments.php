@@ -41,7 +41,7 @@
     </style>
 </head>
 <body>
-    <button class="back-button" onclick="window.location.href='Dashboard.html'">Back</button>
+    <button class="back-button" onclick="window.location.href='Dashboard.php'">Back</button>
 
     <div class="container mt-5">
         <h2 class="text-center text-primary">Upcoming Appointments</h2>
@@ -69,9 +69,12 @@
         const studentId = localStorage.getItem('student_id');
         const sessionId = localStorage.getItem('session_id');
 
+        console.log("Student ID:", studentId);
+        console.log("Session ID:", sessionId);
+
         if (!studentId || !sessionId) {
             console.warn("Missing credentials. Redirecting...");
-            window.location.href = 'student_login.html';
+            // window.location.href = 'student_login.html';
             return;
         }
 

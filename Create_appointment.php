@@ -28,7 +28,7 @@
         </style>
     </head>
     <body>
-        <button class="back-button" onclick="window.location.href='Dashboard.html'">Back</button>
+        <button class="back-button" onclick="window.location.href='Dashboard.php'">Back</button>
         <div class="container mt-5">
             <h2>Create Appointment</h2>
             <form id="appointmentForm">

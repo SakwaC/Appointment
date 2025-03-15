@@ -39,7 +39,7 @@
     </style>
 </head>
 <body>
-    <button class="back-button" onclick="window.location.href='dashboard.html'">Back</button>
+    <button class="back-button" onclick="window.location.href='Dashboard.php'">Back</button>
 
 
     <div class="container mt-5">

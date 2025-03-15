@@ -99,18 +99,18 @@
         <div class="container-box">
             <h2>Student</h2>
             <p>Log in or sign up as a student.</p>
-            <button onclick="location.href='student_login.html'">Log In</button>
-            <button onclick="location.href='Student_registration.html'">Sign Up</button>
+            <button onclick="location.href='student_login.php'">Log In</button>
+            <button onclick="location.href='Student_registration.php'">Sign Up</button>
         </div>
         <div class="container-box">
             <h2>Lecturer</h2>
             <p>Log in or sign up as a lecturer.</p>
-            <button onclick="location.href='Lecturer_login.html'">Log In</button>
-            <button onclick="location.href='lecturer_registration.html'">Sign Up</button>
+            <button onclick="location.href='Lecturer_login.php'">Log In</button>
+            <button onclick="location.href='lecturer_registration.php'">Sign Up</button>
         </div>
         <div class="container-box">
             <h2>About the System</h2>
-            <a href="About.html">Learn More about the system</a>
+            <a href="About.php">Learn More about the system</a>
         </div>
     </div>
     <footer class="footer">

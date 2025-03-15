@@ -77,7 +77,7 @@
     <div class="logo">
         <img src="Ku_logo.jpeg" alt="System Logo" width="100">
     </div>
-    <button class="back-button" onclick="window.location.href='land_in.html'">Back</button>
+    <button class="back-button" onclick="window.location.href='land_in.php'">Back</button>
     <div class="form-container">
         <h2 class="text-center">Lecturer Registration</h2>
         <form id="registrationForm" class="needs-validation" novalidate action="http://localhost/Appointments/lecturer_reg.php" method="POST">
@@ -228,7 +228,7 @@
                 // Send form data using AJAX
                 $.ajax({
                     type: "POST",
-                    url: "http://localhost/Appointments/lecturer_reg.php",
+                    url: "http://localhost/Appointments/lecturer_reg(back).php",
                     data: $(this).serialize(),
                     dataType: "json",
                     success: function(response) {
@@ -239,7 +239,7 @@
     
                         if (response.status === "success") {
                             setTimeout(function() {
-                                window.location.href = "lecturer_login.html"; // Redirect after 3 seconds
+                                window.location.href = "lecturer_login.php"; // Redirect after 3 seconds
                             }, 3000);
                         }
                     },

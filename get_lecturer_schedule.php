@@ -2,11 +2,29 @@
 session_start();
 require 'db_connection.php';
 
-// Allow CORS for requests from your frontend
-header('Access-Control-Allow-Origin: http://127.0.0.1:5500');
-header('Access-Control-Allow-Credentials: true');
-header('Access-Control-Allow-Headers: Content-Type, X-Lecturer-ID, X-Session-ID');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
+// Define allowed origins
+$allowedOrigins = [
+    'http://localhost:3000',
+    'http://127.0.0.1:5500',
+    // Add more origins here if needed
+];
+
+// Get the origin from the request
+$origin = $_SERVER['HTTP_ORIGIN'] ?? null;
+
+// Check if the origin is allowed
+if (in_array($origin, $allowedOrigins)) {
+    header("Access-Control-Allow-Origin: " . $origin);
+    header('Access-Control-Allow-Credentials: true');
+    header('Access-Control-Allow-Headers: Content-Type, X-Lecturer-ID, X-Session-ID');
+    header('Access-Control-Allow-Methods: GET, OPTIONS');
+
+} else {
+    // Optionally, handle invalid origin (e.g., log, send error)
+    // header("HTTP/1.1 403 Forbidden");
+    // exit;
+}
+
 header('Content-Type: application/json');
 
 // Handle OPTIONS request (Preflight)
