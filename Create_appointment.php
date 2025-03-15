@@ -184,7 +184,7 @@ $(document).ready(function () {
                 console.log("Server response:", response);
                 if (response.status === "success") {
                     alert("Appointment successfully created!");
-                    window.location.href = 'Dashboard.html';
+                    window.location.href = 'Dashboard.php';
                 } else {
                     alert(response.message || 'Appointment failed. Please try again.');
                 }

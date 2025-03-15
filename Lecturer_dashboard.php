@@ -113,39 +113,38 @@
     console.log("Lecturer ID from local storage:", lecturerId);
 
     if (lecturerId) {
-        console.log("Fetch URL:", 'lecturer_dashboard_data.php?lecturer_id=' + lecturerId); // Added console.log for fetch URL
+        console.log("Fetch URL:", 'lecturer_dashboard_data.php?lecturer_id=' + lecturerId);
         fetch('lecturer_dashboard_data.php?lecturer_id=' + lecturerId)
             .then(response => response.json())
             .then(data => {
                 const upcomingContainer = document.getElementById('upcoming-appointments-container');
-                upcomingContainer.innerHTML = `<h2>Upcoming Appointments</h2>`;
+                upcomingContainer.innerHTML = `
+                    <h2>Upcoming Appointments</h2>
+                    <div class="text-center mt-3">
+                        <button class="btn btn-primary" onclick="location.href='approve_appointment.php';">
+                            Approve Appointments
+                        </button>
+                    </div>
+                `;
 
                 if (data && data.appointments && Array.isArray(data.appointments)) {
                     if (data.appointments.length === 0) {
                         upcomingContainer.innerHTML += `<p class="text-center text-muted mt-3">No upcoming appointments.</p>`;
                     } else {
                         data.appointments.forEach(appointment => {
-                            try {
-                                const appointmentDiv = document.createElement('div');
-                                appointmentDiv.classList.add('appointments', 'p-2', 'mb-2', 'border', 'rounded');
-                                appointmentDiv.innerHTML = `
-                                    <div class="appointment-title font-weight-bold">${appointment.Description}</div>
-                                    <div>Date & Time: ${appointment.appointment_date} ${appointment.time_of_appointment}</div>
-                                    <div>Student Name: ${appointment.Name}</div>
-                                    <div>Status: ${appointment.status}</div>
-                                    <div>Student Contact: ${appointment.Contact_No}</div>
-                                    <div>Student Comments: ${appointment.Description}</div>
-                                    <div class="text-center mt-3">
-                                        <button class="btn btn-primary" onclick="location.href='approve_appointment.php?appointment_id=${appointment.Appointment_ID}';">
-                                            Approve Appointment
-                                        </button>
-                                    </div>
-                                `;
-                                upcomingContainer.appendChild(appointmentDiv);
-                            } catch (error) {
-                                console.error("Error processing appointment:", error, appointment);
-                                upcomingContainer.innerHTML += `<p class="text-danger">Error displaying an appointment.</p>`;
-                            }
+                            const appointmentDiv = document.createElement('div');
+                            appointmentDiv.classList.add('appointments', 'p-2', 'mb-2', 'border', 'rounded');
+                            appointmentDiv.innerHTML = `
+                                <div class="appointment-title font-weight-bold">${appointment.Description}</div>
+                                <div>Date: ${appointment.appointment_date}</div>
+                                <div>Time: ${appointment.time_of_appointment}</div>
+                                <div>Student Name: ${appointment.Name}</div>
+                                <div>Status: ${appointment.status}</div>
+                                <div>Student Contact: ${appointment.Contact_No}</div>
+                                
+                            `;
+
+                            upcomingContainer.appendChild(appointmentDiv);
                         });
                     }
                 } else {

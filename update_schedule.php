@@ -1,11 +1,30 @@
 <?php
-header('Access-Control-Allow-Origin: http://127.0.0.1:5500');
-header('Access-Control-Allow-Credentials: true');
-header('Content-Type: application/json');
+// Get the origin of the request
+$origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
 
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+// List of allowed origins
+$allowed_origins = [
+    'http://127.0.0.1:5500',
+    'http://localhost:3000', // Add your desired origins here
+    // Add any other origins you want to allow
+];
+
+// Check if the origin is in the allowed list
+if (in_array($origin, $allowed_origins)) {
+    header("Access-Control-Allow-Origin: " . $origin);
+    header("Access-Control-Allow-Credentials: true");
+    header("Content-Type: application/json");
     header('Access-Control-Allow-Methods: POST, OPTIONS');
     header('Access-Control-Allow-Headers: Content-Type, X-Lecturer-ID, X-Session-ID');
+
+    if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+        http_response_code(200);
+        exit;
+    }
+} else {
+    // Optionally handle requests from disallowed origins
+    http_response_code(403);
+    echo json_encode(['error' => 'Origin not allowed']);
     exit;
 }
 
@@ -45,7 +64,7 @@ if (isset($_POST['schedule_id']) && isset($_POST['field']) && isset($_POST['valu
 
     if ($conn->connect_error) {
         http_response_code(500);
-        error_log("Database connection failed: " . $conn->connect_error); // Log connection error
+        error_log("Database connection failed: " . $conn->connect_error);
         echo json_encode(['error' => 'Database connection failed: ' . $conn->connect_error]);
         exit;
     }
@@ -54,38 +73,33 @@ if (isset($_POST['schedule_id']) && isset($_POST['field']) && isset($_POST['valu
     $stmt = $conn->prepare($sql);
 
     if ($stmt) {
-        if ($field == "meeting_duration") {
-            $stmt->bind_param("sii", $value, $scheduleId, $lecturerId);
-        } else {
-            $stmt->bind_param("sii", $value, $scheduleId, $lecturerId);
-        }
+        $stmt->bind_param("sii", $value, $scheduleId, $lecturerId);
 
         if ($stmt->execute()) {
             echo json_encode(['message' => 'Schedule updated successfully']);
         } else {
             http_response_code(500);
-            error_log("SQL Error: " . $stmt->error); // Log SQL error
+            error_log("SQL Error: " . $stmt->error);
             echo json_encode(['error' => 'Error updating schedule: ' . $stmt->error]);
         }
         $stmt->close();
     } else {
         http_response_code(500);
-        error_log("Prepare Error: " . $conn->error); // Log prepare error
+        error_log("Prepare Error: " . $conn->error);
         echo json_encode(['error' => 'Error preparing statement: ' . $conn->error]);
     }
 
     $conn->close();
 } else {
     http_response_code(400);
-    error_log("Missing Parameters: " . print_r($_POST, true)); //log post variables.
+    error_log("Missing Parameters: " . print_r($_POST, true));
     echo json_encode(['error' => 'Missing parameters']);
 }
 
-error_log("POST Data: " . print_r($_POST, true)); // Log POST data
-error_log("Lecturer ID: " . $lecturerId); //log lecturer ID
-error_log("Schedule ID: " . $scheduleId); //log schedule ID
-error_log("Field: " . $field); //log field
-error_log("Value: " . $value); //log Value
-error_log("SQL Query: " . $sql); //log sql Query
-
+error_log("POST Data: " . print_r($_POST, true));
+error_log("Lecturer ID: " . $lecturerId);
+error_log("Schedule ID: " . $scheduleId);
+error_log("Field: " . $field);
+error_log("Value: " . $value);
+error_log("SQL Query: " . $sql);
 ?>

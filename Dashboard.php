@@ -110,53 +110,53 @@
     </div>
 
     <script>
-        fetch('get_Dashboard_data.php')
-            .then(response => response.json())
-            .then(data => {
-                const upcomingContainer = document.getElementById('upcoming-appointments-container');
-                upcomingContainer.innerHTML = `
-                    <h2>Upcoming Appointments</h2>
-                    <div class="text-center mt-3">
-                        <button id="add-appointment" class="btn btn-primary" onclick="location.href='create_appointment.php';">Add Appointment</button>
-                    </div>
-                `;
+    fetch('get_Dashboard_data.php')
+        .then(response => response.json())
+        .then(data => {
+            const upcomingContainer = document.getElementById('upcoming-appointments-container');
+            upcomingContainer.innerHTML = `
+                <h2>Upcoming Appointments</h2>
+                <div class="text-center mt-3">
+                    <button id="add-appointment" class="btn btn-primary" onclick="location.href='create_appointment.php';">Add Appointment</button>
+                </div>
+            `;
 
-                if (data.upcoming_appointments.length === 0) {
-                    // If no upcoming appointments, show a message
-                    upcomingContainer.innerHTML += `<p class="text-center text-muted mt-3">No upcoming appointments.</p>`;
-                } else {
-                    data.upcoming_appointments.forEach(appointment => {
-                        const appointmentDiv = document.createElement('div');
-                        appointmentDiv.classList.add('appointments', 'p-2', 'mb-2', 'border', 'rounded');
-                        appointmentDiv.innerHTML = `
-                            <div class="appointment-title font-weight-bold">${appointment.appointment_title}</div>
-                            <div>Date & Time: ${appointment.appointment_date}</div>
-                            <div>Lecturer Name: ${appointment.lecturer_name}</div>
-                            <div>Status: ${appointment.status}</div>
-                            <div>Lecturer Contact: ${appointment.lecturer_contact}</div>
-                            <div>Lecturer Comments: ${appointment.lecturer_comments}</div>
-                        `;
-                        upcomingContainer.appendChild(appointmentDiv);
-                    });
-                }
-
-                const statsContainer = document.getElementById('quick-stats-container');
-                statsContainer.innerHTML = `<h5>Quick Stats</h5>`;
-                if (data.quick_stats) {
-                    statsContainer.innerHTML += `
-                        <div class="stat my-2">Upcoming Appointments: <strong>${data.quick_stats.upcoming}</strong></div>
-                        <div class="stat my-2">Completed Appointments: <strong>${data.quick_stats.completed}</strong></div>
-                        <div class="stat my-2">Pending Appointments: <strong>${data.quick_stats.pending}</strong></div>
-                        <div class="stat my-2">Cancelled Appointments: <strong>${data.quick_stats.cancelled}</strong></div>
+            if (data.upcoming_appointments.length === 0) {
+                upcomingContainer.innerHTML += `<p class="text-center text-muted mt-3">No upcoming appointments.</p>`;
+            } else {
+                data.upcoming_appointments.forEach(appointment => {
+                    const appointmentDiv = document.createElement('div');
+                    appointmentDiv.classList.add('appointments', 'p-2', 'mb-2', 'border', 'rounded');
+                    appointmentDiv.innerHTML = `
+                        <div class="appointment-title font-weight-bold">${appointment.Description}</div>
+                        <div>Date: ${appointment.appointment_date}</div>
+                        <div>Time: ${appointment.time_of_appointment}</div>
+                        <div>Lecturer Name: ${appointment.lecturer_name}</div>
+                        <div>Status: ${appointment.status}</div>
+                        <div>Lecturer Contact: ${appointment.Contact_No}</div>
+                        <div>Lecturer Comments: ${appointment.Comments}</div>
                     `;
-                } else {
-                    statsContainer.innerHTML += `<p class="text-danger">Error fetching stats.</p>`;
-                }
-            })
-            .catch(error => {
-                console.error("Error fetching data:", error);
-                document.getElementById('upcoming-appointments-container').innerHTML += `<p class="text-danger">Failed to load data.</p>`;
-            });
-    </script>
+                    upcomingContainer.appendChild(appointmentDiv);
+                });
+            }
+
+            const statsContainer = document.getElementById('quick-stats-container');
+            statsContainer.innerHTML = `<h5>Quick Stats</h5>`;
+            if (data.quick_stats) {
+                statsContainer.innerHTML += `
+                    <div class="stat my-2">Upcoming Appointments: <strong>${data.quick_stats.upcoming}</strong></div>
+                    <div class="stat my-2">Completed Appointments: <strong>${data.quick_stats.completed}</strong></div>
+                    <div class="stat my-2">Pending Appointments: <strong>${data.quick_stats.pending}</strong></div>
+                    <div class="stat my-2">Cancelled Appointments: <strong>${data.quick_stats.cancelled}</strong></div>
+                `;
+            } else {
+                statsContainer.innerHTML += `<p class="text-danger">Error fetching stats.</p>`;
+            }
+        })
+        .catch(error => {
+            console.error("Error fetching data:", error);
+            document.getElementById('upcoming-appointments-container').innerHTML += `<p class="text-danger">Failed to load data.</p>`;
+        });
+</script>
 </body>
 </html>

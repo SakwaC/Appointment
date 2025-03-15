@@ -21,9 +21,7 @@ try {
 
     // Get lecturer ID from session or request
     session_start();
-    if (isset($_GET['debug'])) { // Conditional debug output
-        var_dump($_SESSION);
-    }
+
     if (isset($_SESSION['lecturer_id'])) {
         $lecturerId = $_SESSION['lecturer_id'];
     } elseif (isset($_GET['lecturer_id'])) {
@@ -36,20 +34,20 @@ try {
         throw new Exception('Lecturer ID not provided.');
     }
 
-    // Fetch upcoming appointments
+    // Fetch upcoming appointments (only approved and today or future)
     $sqlAppointments = "SELECT 
-                            appoint.Appointment_ID,
-                            appoint.Description,
-                            appoint.appointment_date,
-                            appoint.time_of_appointment,
-                            appoint.status,
-                            students.Name,
-                            students.Contact_No,
-                            appoint.Description
-                        FROM appoint
-                        JOIN students ON appoint.student_id = students.student_id
-                        WHERE appoint.lecturer_id = ? AND appoint.appointment_date >= CURDATE()
-                        ORDER BY appoint.appointment_date ASC, appoint.time_of_appointment ASC";
+                                appoint.Appointment_ID,
+                                appoint.Description,
+                                appoint.appointment_date,
+                                appoint.time_of_appointment,
+                                appoint.status,
+                                students.Name,
+                                students.Contact_No,
+                                appoint.Description
+                            FROM appoint
+                            JOIN students ON appoint.student_id = students.student_id
+                            WHERE appoint.lecturer_id = ? AND appoint.appointment_date >= CURDATE() AND appoint.status = 'approved'
+                            ORDER BY appoint.appointment_date ASC, appoint.time_of_appointment ASC";
 
     $stmtAppointments = $conn->prepare($sqlAppointments);
     if (!$stmtAppointments) {
@@ -63,63 +61,48 @@ try {
     $resultAppointments = $stmtAppointments->get_result();
     $appointments = [];
 
-    if ($resultAppointments->num_rows > 0) {
-        while ($row = $resultAppointments->fetch_assoc()) {
-            $appointments[] = $row;
-        }
+    while ($row = $resultAppointments->fetch_assoc()) {
+        $appointments[] = $row;
     }
+
+    // Close first statement properly
     $stmtAppointments->close();
 
-    // Fetch quick stats
-    $sqlUpcomingCount = "SELECT COUNT(*) as upcoming FROM appoint WHERE lecturer_id = ? AND appointment_date >= CURDATE() AND status = 'approved'";
-    $sqlPendingCount = "SELECT COUNT(*) as pending FROM appoint WHERE lecturer_id = ? AND appointment_date >= CURDATE() AND status = 'pending'";
-    $sqlCancelledCount = "SELECT COUNT(*) as cancelled FROM appoint WHERE lecturer_id = ? AND appointment_date >= CURDATE() AND status = 'rejected'";
+    // Fetch quick stats (all appointments, including past)
+    $sqlCounts = "SELECT 
+                        COUNT(CASE WHEN status = 'approved' THEN 1 END) AS upcoming, 
+                        COUNT(CASE WHEN status = 'pending' THEN 1 END) AS pending, 
+                        COUNT(CASE WHEN status = 'rejected' THEN 1 END) AS cancelled
+                    FROM appoint 
+                    WHERE lecturer_id = ?";
 
-    $stmtUpcomingCount = $conn->prepare($sqlUpcomingCount);
-    $stmtPendingCount = $conn->prepare($sqlPendingCount);
-    $stmtCancelledCount = $conn->prepare($sqlCancelledCount);
-
-    if (!$stmtUpcomingCount || !$stmtPendingCount || !$stmtCancelledCount) {
+    $stmtCounts = $conn->prepare($sqlCounts);
+    if (!$stmtCounts) {
         throw new Exception("Prepare failed: " . $conn->error);
     }
 
-    $stmtUpcomingCount->bind_param("i", $lecturerId);
-    $stmtPendingCount->bind_param("i", $lecturerId);
-    $stmtCancelledCount->bind_param("i", $lecturerId);
-
-    if (!$stmtUpcomingCount->execute()) {
-        throw new Exception("Upcoming Count Execute failed: " . $stmtUpcomingCount->error);
-    }
-    if (!$stmtPendingCount->execute()) {
-        throw new Exception("Pending Count Execute failed: " . $stmtPendingCount->error);
-    }
-    if (!$stmtCancelledCount->execute()) {
-        throw new Exception("Cancelled Count Execute failed: " . $stmtCancelledCount->error);
+    $stmtCounts->bind_param("i", $lecturerId);
+    if (!$stmtCounts->execute()) {
+        throw new Exception("Counts Execute failed: " . $stmtCounts->error);
     }
 
-    $resultUpcomingCount = $stmtUpcomingCount->get_result();
-    $resultPendingCount = $stmtPendingCount->get_result();
-    $resultCancelledCount = $stmtCancelledCount->get_result();
+    $resultCounts = $stmtCounts->get_result();
+    $counts = $resultCounts->fetch_assoc();
 
-    $upcomingCount = $resultUpcomingCount->fetch_assoc()['upcoming'];
-    $pendingCount = $resultPendingCount->fetch_assoc()['pending'];
-    $cancelledCount = $resultCancelledCount->fetch_assoc()['cancelled'];
-
-    $stmtUpcomingCount->close();
-    $stmtPendingCount->close();
-    $stmtCancelledCount->close();
+    $stmtCounts->close();
 
     // Prepare and send JSON response
     $response = [
         'appointments' => $appointments,
-        'upcomingCount' => $upcomingCount,
-        'pendingCount' => $pendingCount,
-        'cancelledCount' => $cancelledCount,
+        'upcomingCount' => $counts['upcoming'] ?? 0,
+        'pendingCount' => $counts['pending'] ?? 0,
+        'cancelledCount' => $counts['cancelled'] ?? 0,
     ];
 
     header('Content-Type: application/json');
     echo json_encode($response);
 
+    // Close database connection
     $conn->close();
 
 } catch (Exception $e) {

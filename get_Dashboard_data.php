@@ -17,7 +17,7 @@ if ($conn->connect_error) {
     exit;
 }
 
-// Upcoming Appointments (Using JOINs)
+// Upcoming Appointments (Using JOINs) - Modified to filter past appointments
 $sql_appointments = "
     SELECT 
         a.appointment_date, 
@@ -49,11 +49,11 @@ while ($row = $result_appointments->fetch_assoc()) {
     $upcoming_appointments[] = $row;
 }
 
-// Quick Stats (from 'approved' table)
+// Quick Stats (from 'approved' table) - Modified to reflect current date
 $sql_upcoming_count = "SELECT COUNT(*) FROM appoint WHERE appointment_date >= CURDATE()";
 $sql_completed_count = "SELECT COUNT(*) FROM approve WHERE status = 'approved'";
 $sql_pending_count = "SELECT COUNT(*) FROM approve WHERE status = 'pending'";
-$sql_cancelled_count = "SELECT COUNT(*) FROM approve WHERE status = 'cancelled'";
+$sql_cancelled_count = "SELECT COUNT(*) FROM approve WHERE status = 'rejected'";
 
 $upcoming_count = $conn->query($sql_upcoming_count);
 $completed_count = $conn->query($sql_completed_count);

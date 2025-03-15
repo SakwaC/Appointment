@@ -90,7 +90,7 @@
                 success: function(response) {
                     if (response.status === "success") {
                         alert('Appointment successfully processed!');
-                        window.location.href = 'Lecturer_dashboard.html';
+                        window.location.href = 'Lecturer_dashboard.php';
                     } else {
                         alert('Failed: ' + response.message);
                     }

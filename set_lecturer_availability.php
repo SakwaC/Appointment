@@ -2,10 +2,33 @@
 session_start();
 require 'db_connection.php';
 
-header("Access-Control-Allow-Origin: http://127.0.0.1:5500");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, X-Lecturer-ID, X-Session-ID");
-header("Access-Control-Allow-Credentials: true");
+// Get the origin of the request
+$origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
+
+// List of allowed origins
+$allowed_origins = [
+    'http://127.0.0.1:5500',
+    'http://localhost:3000', // Add your desired origins here
+    // Add any other origins you want to allow
+];
+
+// Check if the origin is in the allowed list
+if (in_array($origin, $allowed_origins)) {
+    header("Access-Control-Allow-Origin: " . $origin);
+    header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type, X-Lecturer-ID, X-Session-ID");
+    header("Access-Control-Allow-Credentials: true");
+
+    if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+        http_response_code(200);
+        exit;
+    }
+} else {
+    // Optionally handle requests from disallowed origins
+    http_response_code(403);
+    echo json_encode(['status' => 'error', 'message' => 'Origin not allowed']);
+    exit;
+}
 
 $lecturerID = $_POST['lecturer_id'] ?? $_SERVER['HTTP_X_LECTURER_ID'] ?? null;
 $sessionID = session_id();
