@@ -1,89 +1,98 @@
 <?php
-session_start(); // Start the session
+session_start();
+session_regenerate_id(true);
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-// Allow cross-origin requests
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 
-// Handle CORS preflight requests
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-// Ensure request is POST
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     http_response_code(405);
     echo json_encode(["status" => "error", "message" => "Method Not Allowed"]);
-    exit;
+    exit();
+}
+
+// Get raw JSON input
+$rawData = file_get_contents("php://input");
+if (!$rawData) {
+    http_response_code(400);
+    echo json_encode(["status" => "error", "message" => "Invalid request format."]);
+    exit();
+}
+
+$data = json_decode($rawData, true);
+if (!is_array($data)) {
+    http_response_code(400);
+    echo json_encode(["status" => "error", "message" => "Invalid JSON data."]);
+    exit();
 }
 
 // Validate input fields
-if (!isset($_POST['Student_ID']) || !isset($_POST['password'])) {
+$studentID = isset($data['Student_ID']) ? trim($data['Student_ID']) : "";
+$password = isset($data['password']) ? trim($data['password']) : "";
+
+if (empty($studentID) || empty($password)) {
     http_response_code(400);
     echo json_encode(["status" => "error", "message" => "Missing Student_ID or Password."]);
-    exit;
+    exit();
 }
 
 // Database connection
-$host = "localhost"; 
-$username = "root";  
-$password = "";      
-$database = "appointment"; 
+$host = "localhost";
+$username = "root";
+$db_password = "";
+$database = "appointment";
 
-$conn = new mysqli($host, $username, $password, $database);
-
-// Check database connection
+$conn = new mysqli($host, $username, $db_password, $database);
 if ($conn->connect_error) {
+    error_log("Database connection failed: " . $conn->connect_error);
     http_response_code(500);
-    echo json_encode(["status" => "error", "message" => "Database connection failed: " . $conn->connect_error]);
-    exit;
+    echo json_encode(["status" => "error", "message" => "Database connection failed"]);
+    exit();
 }
 
-// Get user input & sanitize
-$studentID = trim($_POST['Student_ID']);
-$password = trim($_POST['password']);
-
-// Prepare SQL statement to prevent SQL injection
-$sql = "SELECT password FROM students WHERE student_id = ?";
+// Fetch user data
+$sql = "SELECT Student_ID, password FROM students WHERE LOWER(Student_ID) = LOWER(?)";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $studentID);
 $stmt->execute();
 $result = $stmt->get_result();
 
-
 if ($result->num_rows > 0) {
     $user = $result->fetch_assoc();
-    $hashedPassword = $user['password']; // Retrieve stored hashed password
+    $hashedPassword = $user['password'];
 
-    // Check if the password is hashed; if not, hash it and update DB
+    // Rehash password only if it's in plain text (legacy case)
     if (!password_get_info($hashedPassword)['algo']) {
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-
-        // Update the database with the hashed password
-        $update_sql = "UPDATE students SET password = ? WHERE student_id = ?";
+        $update_sql = "UPDATE students SET password = ? WHERE Student_ID = ?";
         $update_stmt = $conn->prepare($update_sql);
         $update_stmt->bind_param("ss", $hashedPassword, $studentID);
         $update_stmt->execute();
         $update_stmt->close();
     }
 
-    // Verify hashed password
+    // Verify password
     if (password_verify($password, $hashedPassword)) {
         $_SESSION['student_id'] = $studentID;
-        $_SESSION['session_id'] = session_id();
+        error_log("student_login(back).php: Login successful. student_id set to: " . $_SESSION['student_id']); // Log successful login
+
         echo json_encode([
             "status" => "success",
             "redirect" => "Dashboard.php",
-            "student_id" => $studentID,  // Include student_id in response\
-            "session_id" => session_id()
+            "Student_Id" => $studentID,
         ]);
     } else {
         http_response_code(401);
+        error_log("student_login(back).php: Invalid login credentials for student ID: " . $studentID); // Log failed login
         echo json_encode(["status" => "error", "message" => "Invalid login credentials."]);
     }
 } else {
@@ -91,7 +100,6 @@ if ($result->num_rows > 0) {
     echo json_encode(["status" => "error", "message" => "User not found."]);
 }
 
-// Close connection
 $stmt->close();
 $conn->close();
 ?>

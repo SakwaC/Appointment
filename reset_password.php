@@ -17,15 +17,22 @@ if ($_SERVER["REQUEST_METHOD"] === "OPTIONS") {
 $rawData = file_get_contents("php://input");
 $data = json_decode($rawData, true);
 
+// Debugging logs
+error_log("Raw POST Data: " . $rawData);
+error_log("Decoded JSON Data: " . json_encode($data));
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Validate input
-    if (!isset($data['student_id']) || !isset($data['new_password'])) {
+    if (!$data || empty($data['Student_ID']) || empty($data['new_password'])) {
         echo json_encode(["status" => "error", "message" => "All fields are required."]);
         exit();
     }
 
-    $student_id = trim($data['student_id']);
+    $student_id = trim($data['Student_ID']);
     $new_password = trim($data['new_password']);
+
+    // Debugging: Log received values
+    error_log("Student_ID received: " . $student_id);
 
     // Hash the new password
     $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
@@ -40,6 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         // Update password
         $update_stmt = $conn->prepare("UPDATE students SET password = ? WHERE Student_ID = ?");
         $update_stmt->bind_param("ss", $hashed_password, $student_id);
+        
         if ($update_stmt->execute()) {
             echo json_encode(["status" => "success", "message" => "Password updated successfully."]);
         } else {

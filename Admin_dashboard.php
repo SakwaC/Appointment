@@ -27,6 +27,12 @@
         .chart-container {
             padding: 20px;
         }
+        .navbar .logout-btn {
+            position: absolute;
+         right: 20px;
+         }
+  
+
         footer {
             background-color: #007bff;
             color: white;
@@ -45,6 +51,10 @@
             <img src="Ku_logo.jpeg" alt="Logo">
             Admin Dashboard
         </a>
+        <div class="ml-auto">
+        <a href="Admin_land_in.php" class="btn btn-dark">Log out</a>
+        </div>
+
     </nav>
 
     <div class="container-fluid dashboard-container">

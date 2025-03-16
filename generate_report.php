@@ -5,7 +5,7 @@ header("Access-Control-Allow-Headers: Content-Type");
 
 session_start();
 require 'db_connection.php';
-require('fpdf.php'); // Ensure FPDF is in the correct directory
+require_once('tcpdf/tcpdf.php'); // Include TCPDF library
 
 if ($_SERVER["REQUEST_METHOD"] !== "POST") {
     die("Invalid request");
@@ -38,31 +38,32 @@ if ($result->num_rows === 0) {
     die("No appointments found for the selected date range.");
 }
 
-// Create PDF document
-$pdf = new FPDF();
+// Create PDF document using TCPDF
+$pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+$pdf->SetCreator(PDF_CREATOR);
+$pdf->SetAuthor('Your System');
+$pdf->SetTitle('Student Appointments Report');
+$pdf->SetHeaderData(PDF_HEADER_LOGO, PDF_HEADER_LOGO_WIDTH, 'Student Appointments Report', '');
+$pdf->setHeaderFont(Array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
+$pdf->setFooterFont(Array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
+$pdf->SetDefaultMonospacedFont(PDF_FONT_MONOSPACED);
+$pdf->SetMargins(PDF_MARGIN_LEFT, PDF_MARGIN_TOP, PDF_MARGIN_RIGHT);
+$pdf->SetHeaderMargin(PDF_MARGIN_HEADER);
+$pdf->SetFooterMargin(PDF_MARGIN_FOOTER);
+$pdf->SetAutoPageBreak(TRUE, PDF_MARGIN_BOTTOM);
+$pdf->setFontSubsetting(true);
+$pdf->SetFont('dejavusans', '', 12, '', true);
 $pdf->AddPage();
-$pdf->SetFont('Arial', 'B', 14);
-$pdf->Cell(190, 10, "Student Appointments Report", 0, 1, 'C');
-$pdf->Ln(5);
 
-// Table headers
-$pdf->SetFont('Arial', 'B', 12);
-$pdf->Cell(50, 10, 'Student Name', 1);
-$pdf->Cell(40, 10, 'Reg No', 1);
-$pdf->Cell(50, 10, 'Appointment Date', 1);
-$pdf->Cell(50, 10, 'Status', 1);
-$pdf->Ln();
+$html = '<h1>Student Appointments Report</h1>';
+$html .= '<table border="1"><thead><tr><th>Student Name</th><th>Reg No</th><th>Appointment Date</th><th>Status</th></tr></thead><tbody>';
 
-// Table content
-$pdf->SetFont('Arial', '', 12);
 while ($row = $result->fetch_assoc()) {
-    $pdf->Cell(50, 10, $row['student_name'], 1);
-    $pdf->Cell(40, 10, $row['registration_number'], 1);
-    $pdf->Cell(50, 10, $row['appointment_date'], 1);
-    $pdf->Cell(50, 10, ucfirst($row['status']), 1);
-    $pdf->Ln();
+    $html .= '<tr><td>' . $row['student_name'] . '</td><td>' . $row['registration_number'] . '</td><td>' . $row['appointment_date'] . '</td><td>' . ucfirst($row['status']) . '</td></tr>';
 }
 
-// Output the PDF
-$pdf->Output("D", "student_report.pdf");
+$html .= '</tbody></table>';
+
+$pdf->writeHTML($html, true, false, true, false, '');
+$pdf->Output("student_report.pdf", "D"); // "D" for download
 ?>

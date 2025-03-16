@@ -1,86 +1,107 @@
 <?php
-// Enable error reporting for debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
+
+session_start();
+session_regenerate_id(true);
+
+// Log session ID for debugging
+error_log("Session ID: " . session_id());
+
+if (!isset($_SESSION['student_id']) || empty($_SESSION['student_id'])) {
+    error_log("Session missing or student_id not set: " . print_r($_SESSION, true));
+    http_response_code(401);
+    echo json_encode(['error' => 'Student ID not found in session. Please log in again.']);
+    exit;
+}
+
+$studentId = $_SESSION['student_id'];
+error_log("Student ID: " . $studentId);
 
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "appointment";
 
-// Create connection
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Check database connection
 if ($conn->connect_error) {
-    echo json_encode(['error' => 'Database connection failed: ' . $conn->connect_error]);
+    error_log("Database connection failed: " . $conn->connect_error);
+    http_response_code(500);
+    echo json_encode(['error' => 'Database connection failed']);
     exit;
 }
 
-// Upcoming Appointments (Using JOINs) - Modified to filter past appointments
+// Fetch upcoming appointments
 $sql_appointments = "
     SELECT 
         a.appointment_date, 
         a.time_of_appointment, 
         a.Description,
-        l.name AS lecturer_name,
-        l.Contact_No,
-        ap.Comments,
-        ap.status
+        l.name AS lecturer_name, 
+        l.Contact_No, 
+        COALESCE(ap.Comments, 'No Comments') AS Comments, 
+        COALESCE(ap.status, 'Pending') AS status
     FROM appoint a
     JOIN lecturer l ON a.lecturer_id = l.lecturer_ID
-    JOIN approve ap ON a.Appointment_ID = ap.Appointment_ID
-    WHERE a.appointment_date >= CURDATE()
+    LEFT JOIN approve ap ON a.Appointment_ID = ap.Appointment_ID
+    WHERE a.appointment_date >= CURDATE() 
+    AND a.student_id = ?
     ORDER BY a.appointment_date, a.time_of_appointment
-    LIMIT 5
+    LIMIT 3
 ";
 
-$result_appointments = $conn->query($sql_appointments);
-
-// Check if query execution was successful
-if (!$result_appointments) {
-    echo json_encode(['error' => 'SQL Error: ' . $conn->error]);
+$stmt_appointments = $conn->prepare($sql_appointments);
+if (!$stmt_appointments) {
+    error_log("SQL Error: " . $conn->error . " - Query: " . $sql_appointments); // Log query
+    http_response_code(500);
+    echo json_encode(['error' => 'SQL preparation failed']);
     exit;
 }
 
-// Fetch results into an array
+$stmt_appointments->bind_param("s", $studentId);
+$stmt_appointments->execute();
+$result_appointments = $stmt_appointments->get_result();
+
 $upcoming_appointments = [];
 while ($row = $result_appointments->fetch_assoc()) {
     $upcoming_appointments[] = $row;
 }
+$stmt_appointments->close();
 
-// Quick Stats (from 'approved' table) - Modified to reflect current date
-$sql_upcoming_count = "SELECT COUNT(*) FROM appoint WHERE appointment_date >= CURDATE()";
-$sql_completed_count = "SELECT COUNT(*) FROM approve WHERE status = 'approved'";
-$sql_pending_count = "SELECT COUNT(*) FROM approve WHERE status = 'pending'";
-$sql_cancelled_count = "SELECT COUNT(*) FROM approve WHERE status = 'rejected'";
+function getCount($conn, $sql, $studentId) {
+    $stmt = $conn->prepare($sql);
+    if (!$stmt) {
+        error_log("SQL Error: " . $conn->error . " - Query: " . $sql); // Log query
+        return 0;
+    }
+    $stmt->bind_param("s", $studentId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $count = $result->fetch_row()[0] ?? 0;
+    $stmt->close();
+    return $count;
+}
 
-$upcoming_count = $conn->query($sql_upcoming_count);
-$completed_count = $conn->query($sql_completed_count);
-$pending_count = $conn->query($sql_pending_count);
-$cancelled_count = $conn->query($sql_cancelled_count);
-
-// Ensure valid counts and handle query errors
-$upcoming_count = ($upcoming_count && $upcoming_count->num_rows > 0) ? $upcoming_count->fetch_row()[0] : 0;
-$completed_count = ($completed_count && $completed_count->num_rows > 0) ? $completed_count->fetch_row()[0] : 0;
-$pending_count = ($pending_count && $pending_count->num_rows > 0) ? $pending_count->fetch_row()[0] : 0;
-$cancelled_count = ($cancelled_count && $cancelled_count->num_rows > 0) ? $cancelled_count->fetch_row()[0] : 0;
-
-// Prepare JSON output
-$data = [
-    'upcoming_appointments' => $upcoming_appointments,
-    'quick_stats' => [
-        'upcoming' => $upcoming_count,
-        'completed' => $completed_count,
-        'pending' => $pending_count,
-        'cancelled' => $cancelled_count,
-    ]
+// Quick Stats
+$quick_stats = [
+    'upcoming' => getCount($conn, "SELECT COUNT(*) FROM appoint WHERE appointment_date >= CURDATE() AND student_id = ?", $studentId),
+    'completed' => getCount($conn, "SELECT COUNT(*) FROM approve ap JOIN appoint a ON ap.Appointment_ID = a.Appointment_ID WHERE ap.status = 'approved' AND a.student_id = ?", $studentId),
+    'pending' => getCount($conn, "SELECT COUNT(*) FROM approve ap JOIN appoint a ON ap.Appointment_ID = a.Appointment_ID WHERE ap.status = 'pending' AND a.student_id = ?", $studentId),
+    'cancelled' => getCount($conn, "SELECT COUNT(*) FROM approve ap JOIN appoint a ON ap.Appointment_ID = a.Appointment_ID WHERE ap.status = 'rejected' AND a.student_id = ?", $studentId),
 ];
 
-// Set correct headers for JSON output
-header('Content-Type: application/json');
-echo json_encode($data);
-
-// Close database connection
 $conn->close();
+
+header('Content-Type: application/json');
+
+$response = [
+    'upcoming_appointments' => $upcoming_appointments,
+    'quick_stats' => $quick_stats
+];
+
+// Log the JSON response just before sending it
+error_log("JSON Response: " . json_encode($response, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+
+echo json_encode($response, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 ?>

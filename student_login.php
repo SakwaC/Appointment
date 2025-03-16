@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -108,69 +109,87 @@
     </div>
 
     <script>
-        $(document).ready(function () {
-            $('#loginForm').submit(function (event) {
-                event.preventDefault();
-                var formData = {
-                    Student_ID: $('#idNumber').val().trim(),
-                    password: $('#password').val().trim()
-                };
-                $.ajax({
-                    type: "POST",
-                    url: "http://localhost/Appointments/student_login(back).php",
-                    data: formData,
-                    dataType: "json",
-                    success: function(response) {
-                        console.log("Login Response:", response);
-                        if(response.status === "success") {
-                            console.log("Session ID:", response.session_id); // Check session ID
-                            localStorage.setItem('student_id', response.student_id);
-                            localStorage.setItem('session_id', response.session_id);
-                            console.log("Stored Session ID:", localStorage.getItem('session_id')); 
-                            window.location.href = "Dashboard.php";
-                        } else {
-                            $("#feedback").text(response.message).css("color", "red").show();
-                        }
-                    },
-                    error: function(xhr) {
-                        console.error(xhr.responseText);
-                        try {
-                            var response = JSON.parse(xhr.responseText);
-                            $("#feedback").text(response.message).css("color", "red").show();
-                        } catch (e) {
-                            $("#feedback").text("An unexpected error occurred. Please try again.").css("color", "red").show();
-                        }
-                    }
-                });
+    $(document).ready(function () {
+        $('#loginForm').submit(function (event) {
+            event.preventDefault();
+            var formData = JSON.stringify({
+                Student_ID: $('#idNumber').val().trim(),
+                password: $('#password').val().trim()
             });
 
-            $('#forgotPasswordForm').submit(function (event) {
-                event.preventDefault();
-                var resetData = JSON.stringify({
-                    student_id: $('#resetId').val().trim(),
-                    new_password: $('#newPassword').val().trim()
-                });
-
-                $.ajax({
-                    type: "POST",
-                    url: "http://localhost/Appointments/reset_password.php",
-                    data: resetData,
-                    contentType: "application/json",
-                    dataType: "json",
-                    success: function (response) {
-                        alert(response.message);
-                        if (response.status === "success") {
-                            $('#forgotPasswordModal').modal('hide');
-                        }
-                    },
-                    error: function(xhr) {
-                        console.error(xhr.responseText);
-                        alert("An error occurred.");
+            $.ajax({
+                type: "POST",
+                url: "http://localhost/Appointments/student_login(back).php",
+                data: formData,
+                contentType: "application/json",
+                dataType: "json",
+                success: function (response) {
+                    console.log("Login Response:", response);
+                    if (response.status === "success") {
+                        // Removed localStorage.setItem('Student_Id', response.student_id); as session handles this.
+                        window.location.href = "Dashboard.php";
+                    } else {
+                        $("#feedback").text(response.message).css("color", "red").show();
                     }
-                });
+                },
+                error: function (xhr, status, error) {
+                    console.error("AJAX Error:", status, error, xhr.responseText);
+                    try {
+                        var response = JSON.parse(xhr.responseText);
+                        $("#feedback").text(response.message).css("color", "red").show();
+                    } catch (e) {
+                        $("#feedback").text("An unexpected error occurred. Please try again.").css("color", "red").show();
+                    }
+                }
             });
         });
-    </script>
+
+        $('#forgotPasswordForm').submit(function (event) {
+        event.preventDefault();
+        var resetId = $('#resetId').val().trim();
+         var newPassword = $('#newPassword').val().trim();
+
+        // Check if fields are empty
+        if (!resetId || !newPassword) {
+        alert("All fields are required.");
+        return;
+    }
+
+    var resetData = JSON.stringify({
+        Student_ID: resetId,
+        new_password: newPassword
+    });
+
+    console.log("JSON Data Sent:", resetData);
+    
+    $.ajax({
+        type: "POST",
+        url: "http://localhost/Appointments/reset_password.php",
+        data: resetData,
+        contentType: "application/json",
+        dataType: "json",
+        success: function (response) {
+            console.log("Reset Password Response:", response);
+            alert(response.message);
+            if (response.status === "success") {
+                $('#forgotPasswordModal').modal('hide');
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error("Reset Password AJAX Error:", xhr, status, error, xhr.responseText);
+            alert("An error occurred.");
+            try {
+                var response = JSON.parse(xhr.responseText);
+                alert(response.message);
+            } catch (e) {
+                console.log("Error Parsing Response", e);
+            }
+        }
+    });
+     });
+
+    });
+</script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
