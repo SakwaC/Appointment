@@ -1,107 +1,132 @@
 <?php
+// Enable error reporting for debugging
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-
-session_start();
-session_regenerate_id(true);
-
-// Log session ID for debugging
-error_log("Session ID: " . session_id());
-
-if (!isset($_SESSION['student_id']) || empty($_SESSION['student_id'])) {
-    error_log("Session missing or student_id not set: " . print_r($_SESSION, true));
-    http_response_code(401);
-    echo json_encode(['error' => 'Student ID not found in session. Please log in again.']);
-    exit;
-}
-
-$studentId = $_SESSION['student_id'];
-error_log("Student ID: " . $studentId);
 
 $servername = "localhost";
 $username = "root";
 $password = "";
 $dbname = "appointment";
 
-$conn = new mysqli($servername, $username, $password, $dbname);
+try {
+    // Create connection
+    $conn = new mysqli($servername, $username, $password, $dbname);
 
-if ($conn->connect_error) {
-    error_log("Database connection failed: " . $conn->connect_error);
-    http_response_code(500);
-    echo json_encode(['error' => 'Database connection failed']);
-    exit;
-}
-
-// Fetch upcoming appointments
-$sql_appointments = "
-    SELECT 
-        a.appointment_date, 
-        a.time_of_appointment, 
-        a.Description,
-        l.name AS lecturer_name, 
-        l.Contact_No, 
-        COALESCE(ap.Comments, 'No Comments') AS Comments, 
-        COALESCE(ap.status, 'Pending') AS status
-    FROM appoint a
-    JOIN lecturer l ON a.lecturer_id = l.lecturer_ID
-    LEFT JOIN approve ap ON a.Appointment_ID = ap.Appointment_ID
-    WHERE a.appointment_date >= CURDATE() 
-    AND a.student_id = ?
-    ORDER BY a.appointment_date, a.time_of_appointment
-    LIMIT 3
-";
-
-$stmt_appointments = $conn->prepare($sql_appointments);
-if (!$stmt_appointments) {
-    error_log("SQL Error: " . $conn->error . " - Query: " . $sql_appointments); // Log query
-    http_response_code(500);
-    echo json_encode(['error' => 'SQL preparation failed']);
-    exit;
-}
-
-$stmt_appointments->bind_param("s", $studentId);
-$stmt_appointments->execute();
-$result_appointments = $stmt_appointments->get_result();
-
-$upcoming_appointments = [];
-while ($row = $result_appointments->fetch_assoc()) {
-    $upcoming_appointments[] = $row;
-}
-$stmt_appointments->close();
-
-function getCount($conn, $sql, $studentId) {
-    $stmt = $conn->prepare($sql);
-    if (!$stmt) {
-        error_log("SQL Error: " . $conn->error . " - Query: " . $sql); // Log query
-        return 0;
+    // Check connection
+    if ($conn->connect_error) {
+        throw new Exception("Connection failed: " . $conn->connect_error);
     }
-    $stmt->bind_param("s", $studentId);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $count = $result->fetch_row()[0] ?? 0;
-    $stmt->close();
-    return $count;
+
+    // Start session and get student ID
+    session_start();
+
+    if (isset($_SESSION['student_id'])) {
+        $studentId = $_SESSION['student_id'];
+    } elseif (isset($_GET['student_id'])) {
+        // Sanitize input
+        $studentId = filter_var($_GET['student_id'], FILTER_SANITIZE_FULL_SPECIAL_CHARS);
+    } else {
+        throw new Exception('Student ID not provided.');
+    }
+
+    // Ensure student ID is not empty
+    if (empty($studentId)) {
+        throw new Exception('Invalid Student ID.');
+    }
+
+    // Debugging log
+    error_log("Debug: Student ID = " . $studentId);
+
+    // Fetch upcoming appointments (only approved and today or future)
+    $sqlAppointments = "
+        SELECT 
+            appoint.Appointment_ID,
+            appoint.Description,
+            appoint.appointment_date,
+            appoint.time_of_appointment,
+            appoint.status,
+            lecturer.name AS lecturer_name,
+            lecturer.Contact_No,
+            approve.Comments  -- Fetch Comments from approve table
+        FROM appoint
+        JOIN lecturer ON appoint.lecturer_id = lecturer.lecturer_ID
+        LEFT JOIN approve ON appoint.Appointment_ID = approve.Appointment_ID  -- Ensure we fetch comments
+        WHERE appoint.student_id = ? 
+        AND appoint.appointment_date >= CURDATE() 
+        AND LOWER(appoint.status) = 'approved'
+        ORDER BY appoint.appointment_date ASC, appoint.time_of_appointment ASC";
+
+    $stmtAppointments = $conn->prepare($sqlAppointments);
+    if (!$stmtAppointments) {
+        throw new Exception("Prepare failed (Appointments): " . $conn->error);
+    }
+
+    $stmtAppointments->bind_param("s", $studentId);
+    if (!$stmtAppointments->execute()) {
+        throw new Exception("Appointments Execute failed: " . $stmtAppointments->error);
+    }
+
+    $resultAppointments = $stmtAppointments->get_result();
+    $appointments = [];
+
+    while ($row = $resultAppointments->fetch_assoc()) {
+        $appointments[] = $row;
+    }
+
+    // Close first statement properly
+    $stmtAppointments->close();
+
+    // Debugging logs
+    error_log("Debug: Appointments count = " . count($appointments));
+
+    // Fetch quick stats (all appointments, including past)
+    $sqlCounts = "
+        SELECT 
+            COUNT(CASE WHEN LOWER(status) = 'approved' THEN 1 END) AS upcoming, 
+            COUNT(CASE WHEN LOWER(status) = 'pending' THEN 1 END) AS pending, 
+            COUNT(CASE WHEN LOWER(status) = 'rejected' THEN 1 END) AS cancelled
+        FROM appoint 
+        WHERE student_id = ?";
+
+    $stmtCounts = $conn->prepare($sqlCounts);
+    if (!$stmtCounts) {
+        throw new Exception("Prepare failed (Quick Stats): " . $conn->error);
+    }
+
+    $stmtCounts->bind_param("s", $studentId);
+    if (!$stmtCounts->execute()) {
+        throw new Exception("Counts Execute failed: " . $stmtCounts->error);
+    }
+
+    $resultCounts = $stmtCounts->get_result();
+    $counts = $resultCounts->fetch_assoc() ?? ['upcoming' => 0, 'pending' => 0, 'cancelled' => 0];
+
+    $stmtCounts->close();
+
+    // Debugging logs
+    error_log("Debug: Quick Stats -> Upcoming: {$counts['upcoming']} | Pending: {$counts['pending']} | Cancelled: {$counts['cancelled']}");
+
+    // Prepare and send JSON response
+    $response = [
+        'appointments' => $appointments,
+        'upcomingCount' => $counts['upcoming'] ?? 0,
+        'pendingCount' => $counts['pending'] ?? 0,
+        'cancelledCount' => $counts['cancelled'] ?? 0,
+    ];
+
+    header('Content-Type: application/json');
+    echo json_encode($response);
+
+    // Close database connection
+    $conn->close();
+
+} catch (Exception $e) {
+    // Log the error
+    error_log("Error: " . $e->getMessage());
+
+    // Send error response
+    $response = ['error' => $e->getMessage()];
+    header('Content-Type: application/json');
+    echo json_encode($response);
 }
-
-// Quick Stats
-$quick_stats = [
-    'upcoming' => getCount($conn, "SELECT COUNT(*) FROM appoint WHERE appointment_date >= CURDATE() AND student_id = ?", $studentId),
-    'completed' => getCount($conn, "SELECT COUNT(*) FROM approve ap JOIN appoint a ON ap.Appointment_ID = a.Appointment_ID WHERE ap.status = 'approved' AND a.student_id = ?", $studentId),
-    'pending' => getCount($conn, "SELECT COUNT(*) FROM approve ap JOIN appoint a ON ap.Appointment_ID = a.Appointment_ID WHERE ap.status = 'pending' AND a.student_id = ?", $studentId),
-    'cancelled' => getCount($conn, "SELECT COUNT(*) FROM approve ap JOIN appoint a ON ap.Appointment_ID = a.Appointment_ID WHERE ap.status = 'rejected' AND a.student_id = ?", $studentId),
-];
-
-$conn->close();
-
-header('Content-Type: application/json');
-
-$response = [
-    'upcoming_appointments' => $upcoming_appointments,
-    'quick_stats' => $quick_stats
-];
-
-// Log the JSON response just before sending it
-error_log("JSON Response: " . json_encode($response, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
-
-echo json_encode($response, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 ?>

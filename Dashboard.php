@@ -1,12 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Appointments Dashboard</title>
-
-    <!-- External Styles and Scripts -->
+    <link rel="icon" href="data:,">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
@@ -53,7 +51,6 @@
 </head>
 <body>
 
-    <!-- Header -->
     <div class="header d-flex justify-content-between align-items-center bg-info text-white p-3">
         <img src="Ku_logo.jpeg" alt="logo" width="50" height="40">
         <h1>Appointments Dashboard</h1>
@@ -62,7 +59,6 @@
 
     <div class="container-fluid">
         <div class="row">
-            <!-- Sidebar -->
             <div class="col-md-3 col-lg-2 sidebar">
                 <ul class="nav flex-column">
                     <li class="nav-item"><a class="nav-link" href="Dashboard.php">Dashboard Overview</a></li>
@@ -73,8 +69,7 @@
                     <li class="nav-item"><a class="nav-link" href="reports.php">Reports</a></li>
                 </ul>
             </div>
-            
-            <!-- Main Content -->
+
             <div class="col-md-6 col-lg-6">
                 <div class="appointments" id="upcoming-appointments-container">
                     <h2>Upcoming Appointments</h2>
@@ -84,15 +79,13 @@
                 </div>
             </div>
 
-            <!-- Quick Stats -->
             <div class="col-md-3 col-lg-4">
                 <div class="quick-stats" id="quick-stats-container">
                     <h5>Quick Stats</h5>
                 </div>
             </div>
         </div>
-        
-        <!-- Footer -->
+
         <div class="footer">
             <div><strong>Contact:</strong> appointment.ku.ac.ke</div>
             <div><strong>Privacy Policy:</strong> <a href="#">View Here</a></div>
@@ -101,83 +94,87 @@
     </div>
 
     <script>
-    
-    // Retrieve student ID from PHP session
-    const studentId = <?php echo isset($_SESSION['student_id']) ? json_encode($_SESSION['student_id']) : 'null'; ?>;
+        // Retrieve student ID from local storage
+        const studentId = localStorage.getItem('student_id'); 
+        console.log("Retrieved Student ID:", studentId);
 
+        if (studentId) {
+            // Fetch appointment data from the server
+            fetch(`get_Dashboard_data.php?student_id=${studentId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("API Response:", data);
 
-if (studentId) {
-    fetch('get_Dashboard_data.php?studentId=' + studentId)
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            const upcomingContainer = document.getElementById('upcoming-appointments-container');
-            upcomingContainer.innerHTML = `
-                <h2>Upcoming Appointments</h2>
-                <div class="text-center mt-3">
-                    <button id="add-appointment" class="btn btn-primary" onclick="location.href='create_appointment.php';">Add Appointment</button>
-                </div>
-            `;
+                    const upcomingContainer = document.getElementById('upcoming-appointments-container');
+                    upcomingContainer.innerHTML = `
+                        <h2>Upcoming Appointments</h2>
+                        <div class="text-center mt-3">
+                            <button id="add-appointment" class="btn btn-primary" onclick="location.href='create_appointment.php';">Add Appointment</button>
+                        </div>
+                    `;
 
-            if (data.upcoming_appointments.length === 0) {
-                upcomingContainer.innerHTML += `<p class="text-center text-muted mt-3">No upcoming appointments.</p>`;
-            } else {
-                data.upcoming_appointments.forEach(appointment => {
-                    upcomingContainer.appendChild(createAppointmentDiv(appointment));
+                    if (!data.appointments || data.appointments.length === 0) {
+                        upcomingContainer.innerHTML += `<p class="text-center text-muted mt-3">No upcoming appointments.</p>`;
+                    } else {
+                        data.appointments.forEach(appointment => {
+                            upcomingContainer.appendChild(createAppointmentDiv(appointment));
+                        });
+                    }
+
+                    // Update Quick Stats
+                    const statsContainer = document.getElementById('quick-stats-container');
+                    statsContainer.innerHTML = `<h5>Quick Stats</h5>`;
+
+                    if (data.upcomingCount !== undefined) {
+                        statsContainer.innerHTML += `
+                            <div class="stat my-2">Upcoming Appointments: <strong>${data.upcomingCount || 0}</strong></div>
+                            <div class="stat my-2">Completed Appointments: <strong>${data.completedCount || 0}</strong></div>
+                            <div class="stat my-2">Pending Appointments: <strong>${data.pendingCount || 0}</strong></div>
+                            <div class="stat my-2">Cancelled Appointments: <strong>${data.cancelledCount || 0}</strong></div>
+                        `;
+                    } else {
+                        statsContainer.innerHTML += `<p class="text-danger">Error fetching stats.</p>`;
+                    }
+                })
+                .catch(error => {
+                    console.error("Fetch Error:", error);
+                    document.getElementById('upcoming-appointments-container').innerHTML += `<p class="text-danger">Failed to load appointments.</p>`;
+                    document.getElementById('quick-stats-container').innerHTML += `<p class="text-danger">Failed to load stats.</p>`;
                 });
-            }
+        } else {
+            document.getElementById('upcoming-appointments-container').innerHTML += `<p class="text-danger">Student ID missing.</p>`;
+        }
 
-            // Update Quick Stats
-            const statsContainer = document.getElementById('quick-stats-container');
-            statsContainer.innerHTML = `<h5>Quick Stats</h5>`;
-            if (data.quick_stats) {
-                statsContainer.innerHTML += `
-                    <div class="stat my-2">Upcoming Appointments: <strong>${data.quick_stats.upcoming}</strong></div>
-                    <div class="stat my-2">Completed Appointments: <strong>${data.quick_stats.completed}</strong></div>
-                    <div class="stat my-2">Pending Appointments: <strong>${data.quick_stats.pending}</strong></div>
-                    <div class="stat my-2">Cancelled Appointments: <strong>${data.quick_stats.cancelled}</strong></div>
-                `;
-            } else {
-                statsContainer.innerHTML += `<p class="text-danger">Error fetching stats.</p>`;
-            }
-        })
-        .catch(error => {
-            console.error("Error fetching data:", error);
-            document.getElementById('upcoming-appointments-container').innerHTML += `<p class="text-danger">Failed to load appointments. Please try again later.</p>`;
-            document.getElementById('quick-stats-container').innerHTML += `<p class="text-danger">Failed to load stats. Please try again later.</p>`;
+        // Function to create an appointment card
+        function createAppointmentDiv(appointment) {
+         const appointmentDiv = document.createElement('div');
+          appointmentDiv.classList.add('appointments', 'p-2', 'mb-2', 'border', 'rounded');
+          appointmentDiv.innerHTML = `
+        <div class="appointment-title font-weight-bold">${sanitizeHTML(appointment?.Description || 'No Description')}</div>
+        
+        <div><strong>Date:</strong> ${appointment?.appointment_date || 'N/A'}</div>
+        <div><strong>Time:</strong> ${appointment?.time_of_appointment || 'N/A'}</div>
+        <div><strong>Lecturer Name:</strong> ${sanitizeHTML(appointment?.lecturer_name || 'N/A')}</div>
+        <div><strong>Status:</strong> ${appointment?.status || 'N/A'}</div>
+        <div><strong>Lecturer Contact:</strong> ${appointment?.Contact_No || 'N/A'}</div>
+        <div><strong>Lecturer Comments:</strong> ${sanitizeHTML(appointment?.Comments || 'No Comments')}</div>
+        `;
+         return appointmentDiv;
+        }
 
-        });
-} else {
-    console.error("Student ID not found in session.");
-    document.getElementById('upcoming-appointments-container').innerHTML = `<p class="text-danger">Session Error. Please login again.</p>`;
-    document.getElementById('quick-stats-container').innerHTML = `<p class="text-danger">Session Error. Please login again.</p>`;
-}
 
-function createAppointmentDiv(appointment) {
-    const appointmentDiv = document.createElement('div');
-    appointmentDiv.classList.add('appointments', 'p-2', 'mb-2', 'border', 'rounded');
-    appointmentDiv.innerHTML = `
-        <div class="appointment-title font-weight-bold">${sanitizeHTML(appointment.Description)}</div>
-        <div><strong>Date:</strong> ${appointment.appointment_date}</div>
-        <div><strong>Time:</strong> ${appointment.time_of_appointment}</div>
-        <div><strong>Lecturer Name:</strong> ${sanitizeHTML(appointment.lecturer_name)}</div>
-        <div><strong>Status:</strong> ${appointment.status}</div>
-        <div><strong>Lecturer Contact:</strong> ${appointment.Contact_No}</div>
-        <div><strong>Lecturer Comments:</strong> ${sanitizeHTML(appointment.Comments)}</div>
-    `;
-    return appointmentDiv;
-}
-
-function sanitizeHTML(str) {
-    const temp = document.createElement('div');
-    temp.textContent = str;
-    return temp.innerHTML;
-}
-</script>
+        // Function to sanitize input
+        function sanitizeHTML(str) {
+            const temp = document.createElement('div');
+            temp.textContent = str;
+            return temp.innerHTML;
+        }
+    </script>
 
 </body>
 </html>

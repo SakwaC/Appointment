@@ -1,6 +1,7 @@
 <?php
 session_start();
-session_regenerate_id(true);
+header("Content-Type: application/json");
+error_log("Session ID (at top of " . basename(__FILE__) . "): " . session_id());
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -20,28 +21,13 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
-// Get raw JSON input
-$rawData = file_get_contents("php://input");
-if (!$rawData) {
-    http_response_code(400);
-    echo json_encode(["status" => "error", "message" => "Invalid request format."]);
-    exit();
-}
-
-$data = json_decode($rawData, true);
-if (!is_array($data)) {
-    http_response_code(400);
-    echo json_encode(["status" => "error", "message" => "Invalid JSON data."]);
-    exit();
-}
-
-// Validate input fields
-$studentID = isset($data['Student_ID']) ? trim($data['Student_ID']) : "";
-$password = isset($data['password']) ? trim($data['password']) : "";
+// Get form data directly
+$studentID = isset($_POST['student_id']) ? trim($_POST['student_id']) : "";
+$password = isset($_POST['password']) ? trim($_POST['password']) : "";
 
 if (empty($studentID) || empty($password)) {
     http_response_code(400);
-    echo json_encode(["status" => "error", "message" => "Missing Student_ID or Password."]);
+    echo json_encode(["status" => "error", "message" => "Missing student_id or Password."]);
     exit();
 }
 
@@ -60,7 +46,7 @@ if ($conn->connect_error) {
 }
 
 // Fetch user data
-$sql = "SELECT Student_ID, password FROM students WHERE LOWER(Student_ID) = LOWER(?)";
+$sql = "SELECT student_id, password FROM students WHERE LOWER(student_id) = LOWER(?)";
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("s", $studentID);
 $stmt->execute();
@@ -73,7 +59,7 @@ if ($result->num_rows > 0) {
     // Rehash password only if it's in plain text (legacy case)
     if (!password_get_info($hashedPassword)['algo']) {
         $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-        $update_sql = "UPDATE students SET password = ? WHERE Student_ID = ?";
+        $update_sql = "UPDATE students SET password = ? WHERE student_id = ?";
         $update_stmt = $conn->prepare($update_sql);
         $update_stmt->bind_param("ss", $hashedPassword, $studentID);
         $update_stmt->execute();
@@ -83,12 +69,14 @@ if ($result->num_rows > 0) {
     // Verify password
     if (password_verify($password, $hashedPassword)) {
         $_SESSION['student_id'] = $studentID;
+        $sessionID = session_id();
         error_log("student_login(back).php: Login successful. student_id set to: " . $_SESSION['student_id']); // Log successful login
 
         echo json_encode([
             "status" => "success",
             "redirect" => "Dashboard.php",
-            "Student_Id" => $studentID,
+            "student_id" => $studentID, // Corrected key name
+            "session_id" => $sessionID
         ]);
     } else {
         http_response_code(401);

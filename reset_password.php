@@ -24,6 +24,7 @@ error_log("Decoded JSON Data: " . json_encode($data));
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Validate input
     if (!$data || empty($data['Student_ID']) || empty($data['new_password'])) {
+        http_response_code(400); // Bad Request
         echo json_encode(["status" => "error", "message" => "All fields are required."]);
         exit();
     }
@@ -37,8 +38,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Hash the new password
     $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
 
-    // Check if student exists
-    $stmt = $conn->prepare("SELECT * FROM students WHERE Student_ID = ?");
+    // Check if student exists (case-insensitive)
+    $stmt = $conn->prepare("SELECT * FROM students WHERE LOWER(Student_ID) = LOWER(?)");
     $stmt->bind_param("s", $student_id);
     $stmt->execute();
     $result = $stmt->get_result();
@@ -47,20 +48,24 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         // Update password
         $update_stmt = $conn->prepare("UPDATE students SET password = ? WHERE Student_ID = ?");
         $update_stmt->bind_param("ss", $hashed_password, $student_id);
-        
+
         if ($update_stmt->execute()) {
             echo json_encode(["status" => "success", "message" => "Password updated successfully."]);
         } else {
+            http_response_code(500); // Internal Server Error
+            error_log("Update password failed: " . $update_stmt->error);
             echo json_encode(["status" => "error", "message" => "Failed to update password."]);
         }
         $update_stmt->close();
     } else {
+        http_response_code(404); // Not Found
         echo json_encode(["status" => "error", "message" => "Student ID not found."]);
     }
 
     $stmt->close();
     $conn->close();
 } else {
+    http_response_code(405); // Method Not Allowed
     echo json_encode(["status" => "error", "message" => "Invalid request method."]);
 }
 ?>
