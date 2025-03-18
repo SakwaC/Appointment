@@ -1,7 +1,7 @@
 Array
 (
-    [appointment_id] => APPT-20250318-0001	
-    [comments] => Yes we can meet
-    [date_approved] => 2025-03-19
+    [appointment_id] => APPT-20250318-0001
+    [comments] => Find me in my office
+    [date_approved] => 2025-03-20
     [status] => approved
 )

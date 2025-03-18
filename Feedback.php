@@ -45,23 +45,14 @@
         .back-button:hover {
             background-color: #333;
         }
-        .footer {
-            margin-top: auto;
-            width: 100%;
-            background-color: azure;
-            padding: 10px;
-            text-align: center;
-            font-size: 14px;
-            position: absolute;
-            bottom: 0;
-        }
+        
     </style>
 </head>
 <body>
     <button class="back-button" onclick="window.location.href='Dashboard.php'">Back</button>
     <div class="container">
         <h1 class="text-center">Feedback</h1>
-        <form id="feedbackForm" method="post">
+        <form id="feedbackForm">
             <div class="form-group">
                 <label for="Student_ID">Student ID</label>
                 <input type="text" class="form-control" id="Student_ID" name="Student_ID" placeholder="Student ID" required>
@@ -76,8 +67,7 @@
             </div>
             <div class="form-group">
                 <label for="feedback_date">Feedback Date</label>
-                <input type="date" class="form-control" id="feedback_date" name="feedback_date" required
-                       min="<?= date('Y-m-d'); ?>" max="<?= date('Y-m-d'); ?>">
+                <input type="date" class="form-control" id="feedback_date" name="feedback_date" required min="<?= date('Y-m-d'); ?>" max="<?= date('Y-m-d'); ?>">
             </div>
             <div class="text-center">
                 <button type="submit" class="btn btn-submit">Submit</button>
@@ -86,11 +76,34 @@
         <div id="responseMessage" class="mt-3"></div>
     </div>
 
-    <footer class="footer">
-        &copy; 2025 Kenyatta University. All rights reserved.
-    </footer>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#feedbackForm').submit(function(e) {
+                e.preventDefault(); // Prevent standard form submission
+
+                $.ajax({
+                    type: 'POST',
+                    url: 'feed_db.php', // Correct URL to your PHP script
+                    data: $(this).serialize(),
+                    dataType: 'json',
+                    success: function(response) {
+                        $('#responseMessage').removeClass('alert-danger alert-success');
+                        if (response.status === 'success') {
+                            $('#responseMessage').addClass('alert alert-success').text(response.message);
+                            $('#feedbackForm')[0].reset(); // Clear the form
+                        } else {
+                            $('#responseMessage').addClass('alert alert-danger').text(response.message);
+                        }
+                    },
+                    error: function() {
+                        $('#responseMessage').addClass('alert alert-danger').text('An error occurred.');
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

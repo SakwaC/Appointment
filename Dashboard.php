@@ -54,6 +54,8 @@
     <div class="header d-flex justify-content-between align-items-center bg-info text-white p-3">
         <img src="Ku_logo.jpeg" alt="logo" width="50" height="40">
         <h1>Appointments Dashboard</h1>
+
+        
         <div><a href="land_in.php" class="text-white">Log out</a></div>
     </div>
 
