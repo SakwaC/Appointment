@@ -48,7 +48,7 @@
         .footer {
             margin-top: auto;
             width: 100%;
-            background-color:azure;
+            background-color: azure;
             padding: 10px;
             text-align: center;
             font-size: 14px;
@@ -60,7 +60,6 @@
 <body>
     <button class="back-button" onclick="window.location.href='Dashboard.php'">Back</button>
     <div class="container">
-       
         <h1 class="text-center">Feedback</h1>
         <form id="feedbackForm" method="post">
             <div class="form-group">
@@ -75,6 +74,11 @@
                 <label for="feedback_text">Feedback</label>
                 <textarea class="form-control" id="feedback_text" name="feedback_text" rows="3" placeholder="Enter your Feedback here" required></textarea>
             </div>
+            <div class="form-group">
+                <label for="feedback_date">Feedback Date</label>
+                <input type="date" class="form-control" id="feedback_date" name="feedback_date" required
+                       min="<?= date('Y-m-d'); ?>" max="<?= date('Y-m-d'); ?>">
+            </div>
             <div class="text-center">
                 <button type="submit" class="btn btn-submit">Submit</button>
             </div>
@@ -87,38 +91,6 @@
     </footer>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script> 
-    <script>
-        $(document).ready(function() {
-            $("#feedbackForm").submit(function(event) {
-                event.preventDefault();
-                
-                let submitBtn = $(".btn-submit");
-                submitBtn.prop("disabled", true).text("Submitting...");
-
-                $.ajax({
-                    type: "POST",
-                    url: "http://localhost/Appointments/feed_db.php",
-                    data: $(this).serialize(),
-                    dataType: "json",
-                    success: function(response) {
-                        submitBtn.prop("disabled", false).text("Submit");
-
-                        if (response.status === "success") {
-                            $("#responseMessage").html("<div class='alert alert-success'>Feedback submitted successfully!</div>");
-                            $("#feedbackForm")[0].reset();
-                        } else {
-                            $("#responseMessage").html("<div class='alert alert-danger'>" + response.message + "</div>");
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error("AJAX Error:", status, error);
-                        submitBtn.prop("disabled", false).text("Submit");
-                        $("#responseMessage").html("<div class='alert alert-danger'>Server error. Please try again later.</div>");
-                    }
-                });
-            });
-        });
-    </script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

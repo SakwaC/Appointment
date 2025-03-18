@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             background-color: #e3f2fd;
@@ -23,16 +22,21 @@
             box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
             border-radius: 10px;
             background-color: white;
+            margin-bottom: 20px;
         }
-        .chart-container {
-            padding: 20px;
+        .report-section {
+            background-color: #ffffff;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            margin-top: 40px;
+            margin-bottom: 40px;
+            border: 1px solid #007bff;
         }
         .navbar .logout-btn {
             position: absolute;
-         right: 20px;
-         }
-  
-
+            right: 20px;
+        }
         footer {
             background-color: #007bff;
             color: white;
@@ -45,21 +49,19 @@
 <body>
     <?php include 'db2_connect.php'; ?>
 
-    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <a class="navbar-brand" href="#">
             <img src="Ku_logo.jpeg" alt="Logo">
             Admin Dashboard
         </a>
         <div class="ml-auto">
-        <a href="Admin_land_in.php" class="btn btn-dark">Log out</a>
+            <a href="Admin_land_in.php" class="btn btn-dark">Log out</a>
         </div>
-
     </nav>
 
     <div class="container-fluid dashboard-container">
         <h2 class="text-center text-primary">Admin Dashboard</h2>
-        <div class="row">
+        <div class="row mb-5">
             <div class="col-md-3">
                 <div class="card text-center p-3">
                     <h4>Booked Appointments</h4>
@@ -86,105 +88,77 @@
             </div>
         </div>
 
-        <div class="row mt-4">
-            <div class="col-md-6 chart-container">
-                <canvas id="departmentChart"></canvas>
-            </div>
-            <div class="col-md-6 chart-container">
-                <canvas id="lecturerAvailabilityChart"></canvas>
-            </div>
+        <div class="report-section">
+            <h4 class="text-center text-primary">Generate Reports</h4>
+            <form action="generate_admin_report.php" method="POST" class="text-center">
+                <select name="report_type" class="form-control mb-3" required>
+                    <option value="">Select Report Type</option>
+                    <option value="appointments">Appointments Report</option>
+                    <option value="feedback">Feedback Report</option>
+                    <option value="lecturers">Lecturers and Departments Report</option>
+                    <option value="students">Registered Students Report</option>
+                </select>
+                <input type="date" name="start_date" class="form-control mb-3" required>
+                <input type="date" name="end_date" class="form-control mb-3" required>
+                <button type="submit" class="btn btn-primary">Download Report</button>
+            </form>
         </div>
 
-        <!-- Feedback Section -->
         <div class="mt-4">
             <h4 class="text-center text-primary">Student Feedback</h4>
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="card text-center p-3">
-                        <h4>Total Feedback</h4>
-                        <h2>
-                            <?php 
-                            $result = $conn->query("SELECT COUNT(*) as count FROM feedback");
-                            $row = $result->fetch_assoc();
-                            echo $row['count'];
-                            ?>
-                        </h2>
-                    </div>
-                </div>
-            </div>
-
-            <table class="table table-bordered mt-3">
-                <thead class="thead-dark">
-                    <tr>
-                        <th>Message</th>
-                    </tr>
-                </thead>
-                <tbody id="feedbackTable">
+            <div class="card text-center p-3">
+                <h4>Total Feedback</h4>
+                <h2>
+                    <?php 
+                    $result = $conn->query("SELECT COUNT(*) as count FROM feedback");
+                    $row = $result->fetch_assoc();
+                    echo $row['count'];
+                    ?>
+                </h2>
+                <h5>Recent Feedback</h5>
+                <ul class="list-group">
                     <?php
-                    $feedbackQuery = "SELECT feedback_text FROM feedback LIMIT 3"; // Show only first 3 initially
-                    $result = $conn->query($feedbackQuery);
-
+                    $result = $conn->query("SELECT feedback_text FROM feedback ORDER BY feedback_text DESC LIMIT 3");
                     if ($result->num_rows > 0) {
                         while ($row = $result->fetch_assoc()) {
-                            echo "<tr><td>{$row['feedback_text']}</td></tr>";
+                            echo "<li class='list-group-item'>" . $row['feedback_text'] . "</li>";
                         }
                     } else {
-                        echo "<tr><td class='text-center text-danger'>No feedback found.</td></tr>";
+                        echo "<li class='list-group-item'>No feedback available</li>";
                     }
                     ?>
-                </tbody>
-            </table>
-
-            <div class="text-center">
-                <button class="btn btn-primary" id="viewAllBtn">View All</button>
+                </ul>
+                <a href="#" onclick="showAllFeedback()" class="btn btn-link">View All Feedback</a>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer>
-        &copy; <?php echo date("Y"); ?> Lecturer-Student Appointment System | All Rights Reserved.
-    </footer>
+    <footer>&copy; <?php echo date("Y"); ?> Lecturer-Student Appointment System | All Rights Reserved.</footer>
 
     <script>
-    document.getElementById("viewAllBtn").addEventListener("click", function() {
-        fetch("fetch_all_feedback.php") // Fetch all feedback messages via AJAX
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById("feedbackTable").innerHTML = data;
-                document.getElementById("viewAllBtn").style.display = "none"; // Hide button after clicking
-            })
-            .catch(error => console.error("Error fetching feedback:", error));
-    });
+        function showAllFeedback() {
+            const feedbackList = document.querySelector('.list-group');
+            feedbackList.innerHTML = '';
 
-    // Lecturer Availability Chart
-    fetch("fetch_lecturer_schedule.php")
-        .then(response => response.json())
-        .then(data => {
-            const ctx = document.getElementById('lecturerAvailabilityChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: data.days,
-                    datasets: [{
-                        label: 'Available Hours',
-                        data: data.hours,
-                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
+            fetch('fetch_all_feedback.php')
+                .then(response => response.text())
+                .then(data => {
+                    if (data.trim() === '') {
+                        feedbackList.innerHTML = "<li class='list-group-item'>No feedback available</li>";
+                    } else {
+                        const feedbackArray = data.split('\n');
+                        feedbackArray.forEach(feedback => {
+                            if (feedback.trim()) {
+                                const listItem = document.createElement('li');
+                                listItem.className = 'list-group-item';
+                                listItem.textContent = feedback;
+                                feedbackList.appendChild(listItem);
+                            }
+                        });
                     }
-                }
-            });
-        })
-        .catch(error => console.error("Error fetching lecturer schedule  data:", error));
+                })
+                .catch(error => console.error('Error fetching feedback:', error));
+        }
     </script>
 </body>
 </html>

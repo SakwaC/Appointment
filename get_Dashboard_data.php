@@ -37,25 +37,25 @@ try {
     // Debugging log
     error_log("Debug: Student ID = " . $studentId);
 
-    // Fetch upcoming appointments (only approved and today or future)
-    $sqlAppointments = "
-        SELECT 
-            appoint.Appointment_ID,
-            appoint.Description,
-            appoint.appointment_date,
-            appoint.time_of_appointment,
-            appoint.status,
-            lecturer.name AS lecturer_name,
-            lecturer.Contact_No,
-            approve.Comments  -- Fetch Comments from approve table
-        FROM appoint
-        JOIN lecturer ON appoint.lecturer_id = lecturer.lecturer_ID
-        LEFT JOIN approve ON appoint.Appointment_ID = approve.Appointment_ID  -- Ensure we fetch comments
-        WHERE appoint.student_id = ? 
-        AND appoint.appointment_date >= CURDATE() 
-        AND LOWER(appoint.status) = 'approved'
-        ORDER BY appoint.appointment_date ASC, appoint.time_of_appointment ASC";
-
+       // Fetch upcoming appointments (only approved and today or future)
+$sqlAppointments = "
+SELECT 
+    appoint.Appointment_ID,
+    appoint.Description,
+    DATE(approve.Date_Approved) AS appointment_date,  -- Use DATE() to exclude the time part
+    appoint.time_of_appointment,
+    appoint.status,
+    lecturer.name AS lecturer_name,
+    lecturer.Contact_No,
+    approve.Comments  -- Fetch Comments from approve table
+FROM appoint
+JOIN lecturer ON appoint.lecturer_id = lecturer.lecturer_ID
+LEFT JOIN approve ON appoint.Appointment_ID = approve.Appointment_ID  -- Ensure we fetch Comments and Date_Approved
+WHERE appoint.student_id = ? 
+AND DATE(approve.Date_Approved) >= CURDATE()  -- Ensure filtering uses formatted date
+AND LOWER(appoint.status) = 'approved'
+ORDER BY approve.Date_Approved ASC, appoint.time_of_appointment ASC";
+ 
     $stmtAppointments = $conn->prepare($sqlAppointments);
     if (!$stmtAppointments) {
         throw new Exception("Prepare failed (Appointments): " . $conn->error);

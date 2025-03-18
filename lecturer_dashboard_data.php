@@ -34,20 +34,25 @@ try {
         throw new Exception('Lecturer ID not provided.');
     }
 
-    // Fetch upcoming appointments (only approved and today or future)
-    $sqlAppointments = "SELECT 
-                                appoint.Appointment_ID,
-                                appoint.Description,
-                                appoint.appointment_date,
-                                appoint.time_of_appointment,
-                                appoint.status,
-                                students.Name,
-                                students.Contact_No,
-                                appoint.Description
-                            FROM appoint
-                            JOIN students ON appoint.student_id = students.student_id
-                            WHERE appoint.lecturer_id = ? AND appoint.appointment_date >= CURDATE() AND appoint.status = 'approved'
-                            ORDER BY appoint.appointment_date ASC, appoint.time_of_appointment ASC";
+  // Fetch upcoming appointments (only approved and today or future)
+$sqlAppointments = "
+SELECT 
+    appoint.Appointment_ID,
+    appoint.Description,
+    DATE(approve.Date_Approved) AS appointment_date,  -- Format to show only the date
+    appoint.time_of_appointment,
+    appoint.status,
+    students.Name,
+    students.Contact_No,
+    appoint.Description
+FROM appoint
+JOIN students ON appoint.student_id = students.student_id
+JOIN approve ON appoint.Appointment_ID = approve.Appointment_ID
+WHERE appoint.lecturer_id = ? 
+AND approve.Date_Approved >= CURDATE()
+AND appoint.status = 'approved'
+ORDER BY approve.Date_Approved ASC, appoint.time_of_appointment ASC";
+
 
     $stmtAppointments = $conn->prepare($sqlAppointments);
     if (!$stmtAppointments) {

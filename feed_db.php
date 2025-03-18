@@ -23,9 +23,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $Student_ID = trim($_POST['Student_ID'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $feedback_text = trim($_POST['feedback_text'] ?? '');
+    $feedback_date = trim($_POST['feedback_date'] ?? '');
 
     // Validation 
-    if (empty($Student_ID) || empty($email) || empty($feedback_text)) {
+    if (empty($Student_ID) || empty($email) || empty($feedback_text) || empty($feedback_date)) {
         http_response_code(400);
         echo json_encode(['status' => 'failure', 'message' => "All fields are required."]);
         exit;
@@ -38,16 +39,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Prepared Statement 
-    $sql = "INSERT INTO feedback (Student_ID, Email, feedback_text) VALUES (?, ?, ?)";
+    $sql = "INSERT INTO feedback (Student_ID, Email, feedback_text, feedback_date) VALUES (?, ?, ?, ?)";
     if ($stmt = $conn->prepare($sql)) {
-        $stmt->bind_param("sss", $Student_ID, $email, $feedback_text);
+        $stmt->bind_param("ssss", $Student_ID, $email, $feedback_text, $feedback_date);
 
         if ($stmt->execute()) {
             http_response_code(201); 
             echo json_encode(['status' => 'success', 'message' => 'Feedback submitted successfully.']);
         } else {
             http_response_code(500);
-            // Include more detailed error info for debugging (remove in production)
             echo json_encode(['status' => 'failure', 'message' => "Error inserting record: " . $stmt->error . " (errno: " . $stmt->errno . ")"]);
         }
 
