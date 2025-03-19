@@ -5,8 +5,8 @@ $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
 // List of allowed origins
 $allowed_origins = [
     'http://127.0.0.1:5500',
-    'http://localhost:3000', // Add your desired origins here
-    // Add any other origins you want to allow
+    'http://localhost:3000', 
+    
 ];
 
 // Check if the origin is in the allowed list

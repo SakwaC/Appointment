@@ -85,18 +85,18 @@ try {
     $pdf->Ln(10);
 
      // Table Headers (Adjusted column widths)
-     $pdf->Cell(45, 10, 'Appt. ID', 1); // Increased Appointment ID width
-     $pdf->Cell(40, 10, 'Lecturer', 1); // Reduced Lecturer width
-     $pdf->Cell(30, 10, 'Date', 1); // Reduced Date width
-     $pdf->Cell(75, 10, 'Description', 1); // Increased Description width
+     $pdf->Cell(45, 10, 'Appt. ID', 1); 
+     $pdf->Cell(40, 10, 'Lecturer', 1); 
+     $pdf->Cell(30, 10, 'Date', 1); 
+     $pdf->Cell(75, 10, 'Description', 1); 
      $pdf->Ln(10);
  
      // Table Data (Adjusted column widths)
      while ($row = $result->fetch_assoc()) {
-         $pdf->Cell(45, 10, $row['appointment_id'], 1); // Increased Appointment ID width
-         $pdf->Cell(40, 10, $row['lecturer_name'], 1); // Reduced Lecturer width
-         $pdf->Cell(30, 10, $row['appointment_date'], 1); // Reduced Date width
-         $pdf->Cell(75, 10, $row['Description'], 1); // Increased Description width
+         $pdf->Cell(45, 10, $row['appointment_id'], 1); 
+         $pdf->Cell(40, 10, $row['lecturer_name'], 1); 
+         $pdf->Cell(30, 10, $row['appointment_date'], 1); 
+         $pdf->Cell(75, 10, $row['Description'], 1); 
          $pdf->Ln(10);
      }
  

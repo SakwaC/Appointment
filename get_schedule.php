@@ -4,7 +4,7 @@
 $allowedOrigins = [
     'http://localhost:3000',
     'http://127.0.0.1:5500',
-    // Add more origins here if needed
+    
 ];
 
 // Get the origin from the request
@@ -25,7 +25,7 @@ if (in_array($origin, $allowedOrigins)) {
 
 header('Content-Type: application/json');
 
-// Include database connection file (replace with your actual file)
+// Include database connection file 
 include 'db_connection.php';
 
 // Authenticate lecturer session
@@ -39,7 +39,7 @@ if (!$lecturer_id || !$session_id) {
 }
 
 try {
-    // Corrected SQL query to include the 'id' column
+    
     $sql = "SELECT id, days, start_time, end_time, meeting_duration FROM lecturer_schedule WHERE lecturer_id = ?";
     $stmt = $conn->prepare($sql);
 

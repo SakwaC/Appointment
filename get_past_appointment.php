@@ -6,7 +6,7 @@ require 'db_connection.php';
 $allowedOrigins = [
     'http://localhost:3000',
     'http://127.0.0.1:5500',
-    // Add more origins here if needed
+    
 ];
 
 // Get the origin from the request

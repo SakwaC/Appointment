@@ -40,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $name = trim($data['name']);
     $admin_id = trim($data['admin_ID']);
     $email = trim($data['email']);
-    $contact_no = $data['contact_no']; // Do not trim, keep +254
+    $contact_no = $data['contact_no']; //  keep +254
     $password = trim($data['password']);
 
     // Validate Name (Only letters and spaces)
@@ -72,7 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     // Check for duplicates (email and contact_no only)
     $checkStmt = $conn->prepare("SELECT id FROM admin WHERE email = ? OR contact_no = ?");
-    $checkStmt->bind_param("ss", $email, $contact_no); // Changed "si" to "ss"
+    $checkStmt->bind_param("ss", $email, $contact_no); 
     $checkStmt->execute();
     $checkStmt->store_result();
 
@@ -84,7 +84,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     $checkStmt->close();
 
-    // Insert into database (id is auto-generated)
+    // Insert into database 
     $stmt = $conn->prepare("INSERT INTO admin (name, admin_ID, email, contact_no, password) VALUES (?, ?, ?, ?, ?)");
     $stmt->bind_param("sisss", $name, $admin_id, $email, $contact_no, $hashed_password);
 
