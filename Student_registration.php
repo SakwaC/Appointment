@@ -318,16 +318,19 @@
                     isValid = false;
                 }
     
+               
                 // Contact Number Validation
-                let contactNo = $('#contactNo').val();
-                if (!contactNo.startsWith('+254')) {
-                    $('#contactNo').after('<small class="error-message" style="color:red;">Contact number must start with +254</small>');
-                    isValid = false;
+                 let contactNo = $('#contactNo').val();
+                 let contactPattern = /^\+254\d{9}$/;
+
+                 if (!contactNo.trim()) {
+                  $('#contactNo').after('<small class="error-message" style="color:red;">This field is required</small>');
+                   isValid = false;
+                 } else if (!contactPattern.test(contactNo)) {
+                         $('#contactNo').after('<small class="error-message" style="color:red;">Contact number should be in the format +254XXXXXXXX</small>');
+                  isValid = false;
                 }
-                if(!contactNo.trim()){
-                    $('#contactNo').after('<small class="error-message" style="color:red;">This field is required</small>');
-                    isValid = false;
-                }
+
     
                 // School, Department, Course and Registration Date Validation
                 if(!$('#school').val().trim()){

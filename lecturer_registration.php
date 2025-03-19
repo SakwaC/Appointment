@@ -134,9 +134,18 @@
         }
     
         $(document).ready(function() {
-            // Ensure phone number starts with +254
-            $('#contactNo').val('+254');
-    
+              // Contact Number Validation
+              let contactNo = $('#contactNo').val();
+                 let contactPattern = /^\+254\d{9}$/;
+
+                 if (!contactNo.trim()) {
+                  $('#contactNo').after('<small class="error-message" style="color:red;">This field is required</small>');
+                   isValid = false;
+                 } else if (!contactPattern.test(contactNo)) {
+                         $('#contactNo').after('<small class="error-message" style="color:red;">Contact number should be in the format +254XXXXXXXX</small>');
+                  isValid = false;
+                }
+
             // Department selection based on school
             $('#school').change(function() {
                 var school = $(this).val();
