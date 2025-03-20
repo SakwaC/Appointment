@@ -73,13 +73,14 @@ ORDER BY approve.Date_Approved ASC, appoint.time_of_appointment ASC";
     // Close first statement properly
     $stmtAppointments->close();
 
-    // Fetch quick stats (all appointments, including past)
+    // Fetch counts for upcoming, pending, and cancelled appointments
     $sqlCounts = "SELECT 
-                        COUNT(CASE WHEN status = 'approved' THEN 1 END) AS upcoming, 
-                        COUNT(CASE WHEN status = 'pending' THEN 1 END) AS pending, 
-                        COUNT(CASE WHEN status = 'rejected' THEN 1 END) AS cancelled
-                    FROM appoint 
-                    WHERE lecturer_id = ?";
+                    COUNT(CASE WHEN status = 'approved' AND appointment_date >= CURDATE() THEN 1 END) AS upcoming, 
+                    COUNT(CASE WHEN status = 'pending' THEN 1 END) AS pending, 
+                    COUNT(CASE WHEN status = 'rejected' THEN 1 END) AS cancelled
+                FROM appoint 
+                WHERE lecturer_id = ?";
+
 
     $stmtCounts = $conn->prepare($sqlCounts);
     if (!$stmtCounts) {

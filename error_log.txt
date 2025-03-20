@@ -108,3 +108,4 @@ Stack trace:
   thrown in C:\Users\pc\Downloads\downloads\htdocs\Appointments\generate_report.php on line 52
 [18-Mar-2025 14:37:07 Europe/Berlin] No appointments found for Student ID: J31/7104/2021 between 2025-03-19 and 2025-03-20
 [18-Mar-2025 17:17:16 Europe/Berlin] No appointments found for Student ID: J31/7104/2021 between 2025-03-16 and 2025-03-20
+[19-Mar-2025 21:05:20 Europe/Berlin] No appointments found for Student ID: B11/0660/2021 between 2025-03-17 and 2025-03-21

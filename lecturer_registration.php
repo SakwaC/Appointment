@@ -142,7 +142,7 @@
                   $('#contactNo').after('<small class="error-message" style="color:red;">This field is required</small>');
                    isValid = false;
                  } else if (!contactPattern.test(contactNo)) {
-                         $('#contactNo').after('<small class="error-message" style="color:red;">Contact number should be in the format +254XXXXXXXX</small>');
+                         $('#contactNo').after('<small class="error-message" style="color:red;">Invalid contact number format</small>');
                   isValid = false;
                 }
 

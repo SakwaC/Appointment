@@ -79,14 +79,15 @@ ORDER BY approve.Date_Approved ASC, appoint.time_of_appointment ASC";
     // Debugging logs
     error_log("Debug: Appointments count = " . count($appointments));
 
-    // Fetch quick stats (all appointments, including past)
+    // Fetch quick stats
     $sqlCounts = "
-        SELECT 
-            COUNT(CASE WHEN LOWER(status) = 'approved' THEN 1 END) AS upcoming, 
-            COUNT(CASE WHEN LOWER(status) = 'pending' THEN 1 END) AS pending, 
-            COUNT(CASE WHEN LOWER(status) = 'rejected' THEN 1 END) AS cancelled
-        FROM appoint 
-        WHERE student_id = ?";
+    SELECT 
+        COUNT(CASE WHEN LOWER(status) = 'approved' AND appointment_date >= CURDATE() THEN 1 END) AS upcoming, 
+        COUNT(CASE WHEN LOWER(status) = 'pending' THEN 1 END) AS pending, 
+        COUNT(CASE WHEN LOWER(status) = 'rejected' THEN 1 END) AS cancelled
+    FROM appoint 
+    WHERE student_id = ?";
+
 
     $stmtCounts = $conn->prepare($sqlCounts);
     if (!$stmtCounts) {
