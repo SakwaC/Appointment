@@ -36,7 +36,30 @@
             bottom: 0;
         }
 
-    </style>
+        
+        .confirm-button {
+    position: absolute;
+    top: 50%;
+    right: -90px; /* Adjusted right value to increase space */
+    transform: translateY(-50%);
+    background-color: #4CAF50;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.confirm-button:hover {
+    background-color: #3e8e41;
+}
+
+/* Add a margin to the description text */
+td[style="position: relative;"] {
+    padding-right: 90px; /* Matches the right value of the button */
+}
+</style>
+
     
 </head>
 <body>
@@ -64,18 +87,25 @@
     </div>
 
     <script>
+    function goToApprovePage(appointmentId) {
+        let url = "approve_appointment.php?id=" + encodeURIComponent(appointmentId);
+        console.log("Redirecting to:", url);
+        window.location.href = url;
+    }
+
     $(document).ready(function () {
         const sessionId = localStorage.getItem('session_id');
         const lecturerId = localStorage.getItem('lecturer_id');
-         console.log("Current lecturer ID being sent:", lecturerId);
+        console.log("Current Lecturer ID:", lecturerId);
 
         if (!sessionId || !lecturerId) {
+            console.warn("Session or Lecturer ID is missing. Redirecting to login...");
             window.location.href = 'lecturer_login.html';
             return;
         }
 
         function refreshBookedAppointments() {
-            console.log("Refreshing booked appointments...");
+            console.log("Fetching booked appointments...");
             $.ajax({
                 url: "http://localhost/Appointments/get_booked_appointment.php",
                 type: "GET",
@@ -88,46 +118,61 @@
                     'X-Lecturer-ID': lecturerId
                 },
                 success: function(response) {
-                    console.log("Received response:", response);
+                    console.log("API Response:", response);
 
                     let appointTable = $("#appointTable");
                     appointTable.empty();
 
                     if (!Array.isArray(response)) {
                         let message = response.message || "Error fetching data";
-                        console.log(message);
-                        appointTable.append(`<tr><td colspan='7' class='text-center text-danger'>${message}</td></tr>`);
+                        console.warn("API Error Message:", message);
+                        appointTable.append(`<tr><td colspan='8' class='text-center text-danger'>${message}</td></tr>`);
                         return;
                     }
 
                     if (response.length === 0) {
-                        appointTable.append("<tr><td colspan='7' class='text-center text-danger'>No pending appointments</td></tr>");
+                        appointTable.append("<tr><td colspan='8' class='text-center text-danger'>No pending appointments</td></tr>");
                         return;
                     }
 
                     response.forEach(appointment => {
+                        console.log("Processing appointment:", appointment);
+
+                        let appointmentId = appointment.Appointment_ID || 'N/A';
+                        let studentId = appointment.student_id || 'N/A';
+                        let studentName = appointment.student_name || 'N/A';
+                        let department = appointment.department || 'N/A';
+                        let appointmentDate = appointment.appointment_date || 'N/A';
+                        let appointmentTime = appointment.time_of_appointment || 'N/A';
+                        let description = appointment.Description || 'N/A';
+
                         let row = `<tr>
-                            <td>${appointment.Appointment_ID || 'N/A'}</td>
-                            <td>${appointment.student_id || 'N/A'}</td>
-                            <td>${appointment.student_name || 'N/A'}</td>
-                            <td>${appointment.department || 'N/A'}</td>
-                            <td>${appointment.appointment_date || 'N/A'}</td>
-                            <td>${appointment.time_of_appointment || 'N/A'}</td>
-                            <td>${appointment.Description || 'N/A'}</td>
+                            <td>${appointmentId}</td>
+                            <td>${studentId}</td>
+                            <td>${studentName}</td>
+                            <td>${department}</td>
+                            <td>${appointmentDate}</td>
+                            <td>${appointmentTime}</td>
+                            <td style="position: relative;">
+                                ${description}
+                                <button class="confirm-button" onclick="goToApprovePage('${encodeURIComponent(appointmentId)}')">Confirm</button>
+                            </td>
                         </tr>`;
+
                         appointTable.append(row);
                     });
                 },
                 error: function(xhr, status, error) {
                     console.error("AJAX Error:", xhr.responseText || error);
-                    $("#appointTable").html(`<tr><td colspan='7' class='text-center text-danger'>Error fetching data. Please try again.</td></tr>`);
+                    $("#appointTable").html(`<tr><td colspan='8' class='text-center text-danger'>Error fetching data. Please try again.</td></tr>`);
                 }
             });
         }
 
         refreshBookedAppointments();
     });
-    </script>
+</script>
+
 
     <div class="footer">
         &copy; 2025 Kenyatta University. All rights reserved.

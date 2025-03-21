@@ -1,7 +1,7 @@
 Array
 (
-    [appointment_id] => APPT-20250319-0002
-    [comments] => I will be available in the office
-    [date_approved] => 2025-03-21
+    [appointment_id] => APPT-20250320-0004
+    [comments] => see you
+    [date_approved] => 
     [status] => approved
 )

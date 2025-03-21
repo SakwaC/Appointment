@@ -55,7 +55,7 @@
             Admin Dashboard
         </a>
         <div class="ml-auto">
-            <a href="Admin_land_in.php" class="btn btn-dark">Log out</a>
+            <a href="land_in.php" class="btn btn-dark">Log out</a>
         </div>
     </nav>
 
@@ -90,18 +90,52 @@
 
         <div class="report-section">
             <h4 class="text-center text-primary">Generate Reports</h4>
-            <form action="generate_admin_report.php" method="POST" class="text-center">
-                <select name="report_type" class="form-control mb-3" required>
-                    <option value="">Select Report Type</option>
-                    <option value="appointments">Appointments Report</option>
-                    <option value="feedback">Feedback Report</option>
-                    <option value="lecturers">Lecturers and Departments Report</option>
-                    <option value="students">Registered Students Report</option>
-                </select>
-                <input type="date" name="start_date" class="form-control mb-3" required>
-                <input type="date" name="end_date" class="form-control mb-3" required>
-                <button type="submit" class="btn btn-primary">Download Report</button>
-            </form>
+
+            <div id="reportSelection">
+                <form action="generate_admin_report.php" method="POST" class="text-center">
+                    <select name="report_type" class="form-control mb-3" required>
+                        <option value="">Select Report Type</option>
+                        <option value="appointments">Appointments Report</option>
+                        <option value="feedback">Feedback Report</option>
+                        <option value="lecturers">Lecturers and Departments Report</option>
+                        <option value="students">Registered Students Report</option>
+                    </select>
+                    <input type="date" name="start_date" class="form-control mb-3" required>
+                    <input type="date" name="end_date" class="form-control mb-3" required>
+                    <button type="submit" class="btn btn-primary">Download Report</button>
+                </form>
+            </div>
+
+            <div id="lecturerAppointment" class="mt-4">
+                <h4 class="text-center text-primary">Appointments by Lecturer</h4>
+                <form id="lecturerAppointmentForm" class="text-center">
+                    <input type="text" id="lecturerIdInput" class="form-control mb-3" placeholder="Enter Lecturer ID" required>
+                    <input type="date" id="lecturerStartDate" class="form-control mb-3" required>
+                    <input type="date" id="lecturerEndDate" class="form-control mb-3" required>
+                    <button type="button" onclick="generateLecturerAppointmentsReport()" class="btn btn-primary">Generate Report</button>
+                </form>
+                <div id="lecturerAppointmentReportArea" class="mt-3"></div>
+            </div>
+
+            <div id="schoolDepartmentDate" class="mt-4">
+                <h4 class="text-center text-primary">Students by School/Department</h4>
+                <form id="schoolDepartmentForm" class="text-center">
+                    <select id="school" class="form-control mb-3" required>
+                        <option value="">Select School</option>
+                        <option value="SPAS">SPAS</option>
+                        <option value="School of Business">School of Business</option>
+                        <option value="SEA">SEA</option>
+                        <option value="School of Education">School of Education</option>
+                    </select>
+                    <select id="department" class="form-control mb-3" required>
+                        <option value="">Select Department</option>
+                    </select>
+                    <input type="date" id="schoolStartDate" class="form-control mb-3" required>
+                    <input type="date" id="schoolEndDate" class="form-control mb-3" required>
+                    <button type="button" onclick="generateStudentsByDepartmentReport()" class="btn btn-primary">Generate Report</button>
+                </form>
+                <div id="schoolDepartmentReportArea" class="mt-3"></div>
+            </div>
         </div>
 
         <div class="mt-4">
@@ -109,7 +143,7 @@
             <div class="card text-center p-3">
                 <h4>Total Feedback</h4>
                 <h2>
-                    <?php 
+                    <?php
                     $result = $conn->query("SELECT COUNT(*) as count FROM feedback");
                     $row = $result->fetch_assoc();
                     echo $row['count'];
@@ -134,31 +168,123 @@
     </div>
 
     <footer>&copy; <?php echo date("Y"); ?> Lecturer-Student Appointment System | All Rights Reserved.</footer>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    const schoolSelect = document.getElementById('school');
+    const departmentSelect = document.getElementById('department');
 
-    <script>
-        function showAllFeedback() {
-            const feedbackList = document.querySelector('.list-group');
-            feedbackList.innerHTML = '';
+    const schoolDepartments = {
+        'SPAS': ['Computing and Information Science', 'Biology and Chemistry', 'Biotechnology'],
+        'School of Business': ['Accounting', 'Business Administration'],
+        'SEA': ['Mechanical', 'Electrical'],
+        'School of Education': ['Geography', 'English Literature']
+    };
 
-            fetch('fetch_all_feedback.php')
-                .then(response => response.text())
-                .then(data => {
-                    if (data.trim() === '') {
-                        feedbackList.innerHTML = "<li class='list-group-item'>No feedback available</li>";
-                    } else {
-                        const feedbackArray = data.split('\n');
-                        feedbackArray.forEach(feedback => {
-                            if (feedback.trim()) {
-                                const listItem = document.createElement('li');
-                                listItem.className = 'list-group-item';
-                                listItem.textContent = feedback;
-                                feedbackList.appendChild(listItem);
-                            }
-                        });
-                    }
-                })
-                .catch(error => console.error('Error fetching feedback:', error));
+    schoolSelect.addEventListener('change', function() {
+        const selectedSchool = schoolSelect.value;
+        departmentSelect.innerHTML = '<option value="">Select Department</option>';
+
+        if (schoolDepartments[selectedSchool]) {
+            schoolDepartments[selectedSchool].forEach(department => {
+                const option = document.createElement('option');
+                option.value = department;
+                option.textContent = department;
+                departmentSelect.appendChild(option);
+            });
         }
-    </script>
+    });
+});
+
+function showAllFeedback() {
+    const feedbackList = document.querySelector('.list-group');
+    if (!feedbackList) return console.error("Feedback list element not found.");
+
+    feedbackList.innerHTML = 'Loading feedback...';
+
+    fetch('fetch_all_feedback.php')
+        .then(response => response.text())
+        .then(data => {
+            feedbackList.innerHTML = data.trim() ?
+                data.split('\n').map(fb => `<li class='list-group-item'>${fb}</li>`).join('')
+                : "<li class='list-group-item'>No feedback available</li>";
+        })
+        .catch(error => {
+            console.error('Error fetching feedback:', error);
+            feedbackList.innerHTML = "<li class='list-group-item'>Error loading feedback. Please try again.</li>";
+        });
+}
+
+function generateLecturerAppointmentsReport() {
+    const lecturerInput = document.getElementById("lecturerIdInput");
+    const startDateInput = document.getElementById("lecturerStartDate");
+    const endDateInput = document.getElementById("lecturerEndDate");
+    const reportArea = document.getElementById("lecturerAppointmentReportArea");
+
+    if (!reportArea) {
+        console.error("Error: lecturerAppointmentReportArea element is missing in the HTML!");
+        alert("Report area is missing in the HTML. Please check your code.");
+        return;
+    }
+
+    reportArea.innerHTML = "Generating report...";
+
+    const lecturerId = lecturerInput.value;
+    const startDate = startDateInput.value;
+    const endDate = endDateInput.value;
+
+    console.log("Lecturer ID:", lecturerId);
+    console.log("Start Date:", startDate);
+    console.log("End Date:", endDate);
+
+    if (!lecturerId || !startDate || !endDate) {
+        alert("Please select all fields before generating the report.");
+        return;
+    }
+
+    reportArea.innerHTML = "Loading report...";
+    fetch(`fetch_lecturer_appointments.php?lecturerId=${encodeURIComponent(lecturerId)}&start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`)
+        .then(response => response.blob())
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
+            window.open(url, "_blank");
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("Error generating report.");
+        });
+}
+
+function generateStudentsByDepartmentReport() {
+    const school = document.getElementById('school').value;
+    const department = document.getElementById('department').value;
+    const startDate = document.getElementById('schoolStartDate').value;
+    const endDate = document.getElementById('schoolEndDate').value;
+    const reportArea = document.getElementById('schoolDepartmentReportArea');
+
+    if (!reportArea) {
+        console.error("Error: schoolDepartmentReportArea element is missing in the HTML!");
+        alert("Report area is missing in the HTML. Please check your code.");
+        return;
+    }
+
+    reportArea.innerHTML = "Generating report...";
+
+    if (!school || !department || !startDate || !endDate) {
+        alert("Please select all fields before generating the report.");
+        return;
+    }
+
+    fetch(`fetch_students_dept.php?school=${encodeURIComponent(school)}&department=${encodeURIComponent(department)}&start_date=${encodeURIComponent(startDate)}&end_date=${encodeURIComponent(endDate)}`)
+        .then(response => response.blob())
+        .then(blob => {
+            const url = URL.createObjectURL(blob);
+            window.open(url, "_blank");
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert("Error generating report.");
+        });
+}
+</script>
 </body>
 </html>

@@ -26,16 +26,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $Name = trim($_POST['Name']);
     $email = trim($_POST['email']);
     $password = trim($_POST['password']);
-    $Contact_No = trim($_POST['contactNo']); 
-    $school = trim($_POST['school']); 
-    $department = trim($_POST['department']); 
+    $Contact_No = trim($_POST['contactNo']);
+    $school = trim($_POST['school']);
+    $department = trim($_POST['department']);
     $course = trim($_POST['course']);
-    $Registration_Date = trim($_POST['registration_date']); 
+    $Registration_Date = trim($_POST['registration_date']);
 
     // Validate required fields
     if (empty($Student_ID) || empty($Name) || empty($email) || empty($password) || empty($Contact_No) || empty($school) || empty($department) || empty($course) || empty($Registration_Date)) {
         die(json_encode(['status' => 'failure', 'message' => "All fields are required."]));
     }
+
+    // Check for duplicates (Student_ID and email)
+    $check_sql = "SELECT Student_ID, Email FROM students WHERE Student_ID = ? OR Email = ?";
+    $check_stmt = $conn->prepare($check_sql);
+    $check_stmt->bind_param("ss", $Student_ID, $email);
+    $check_stmt->execute();
+    $check_stmt->store_result();
+
+    if ($check_stmt->num_rows > 0) {
+        die(json_encode(['status' => 'failure', 'message' => "Student ID or Email already exists."]));
+    }
+    $check_stmt->close();
 
     // Hash the password
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
@@ -53,12 +65,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } else {
             echo json_encode(["status" => "error", "message" => "Registration failed: " . $stmt->error]);
         }
-    
+
         $stmt->close();
     } else {
         echo json_encode(["status" => "error", "message" => "SQL error: " . $conn->error]);
     }
-       
 
     // Close connection
     $conn->close();

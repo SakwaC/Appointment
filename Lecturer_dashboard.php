@@ -64,6 +64,9 @@
         h5 {
             font-weight: bold;
         }
+        h2{
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -120,11 +123,7 @@
                 const upcomingContainer = document.getElementById('upcoming-appointments-container');
                 upcomingContainer.innerHTML = `
                     <h2>Upcoming Appointments</h2>
-                    <div class="text-center mt-3">
-                        <button class="btn btn-primary" onclick="location.href='approve_appointment.php';">
-                            Approve Appointments
-                        </button>
-                    </div>
+                   
                 `;
 
                 if (data && data.appointments && Array.isArray(data.appointments)) {

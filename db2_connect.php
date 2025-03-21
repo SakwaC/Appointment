@@ -47,4 +47,39 @@ function getAvailableLecturers() {
     $row = $result->fetch_assoc();
     return $row['total'] ?? 0;
 }
+
+// Function to fetch lecturer name by ID
+function getLecturerNameById($lecturerId) {
+    global $conn;
+    $stmt = $conn->prepare("SELECT name FROM lecturer WHERE lecturer_id = ?");
+    $stmt->bind_param("i", $lecturerId);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($row = $result->fetch_assoc()) {
+        $lecturerName = $row['name'];
+    } else {
+        $lecturerName = null; // Lecturer not found
+    }
+
+    $stmt->close();
+    return $lecturerName;
+}
+
+// Handle the fetch_lecturer_name.php request (if needed)
+
+if (isset($_GET['lecturerId'])) {
+    $lecturerId = $_GET['lecturerId'];
+
+    $lecturerName = getLecturerNameById($lecturerId);
+
+    if ($lecturerName !== null) {
+        $lecturer = array('name' => $lecturerName);
+        echo json_encode($lecturer);
+    } else {
+        echo json_encode(array('name' => null));
+    }
+}
+
+// Do NOT close the connection here!
 ?>

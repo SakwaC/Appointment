@@ -12,13 +12,29 @@ if (empty($reportType) || empty($startDate) || empty($endDate)) {
     die("Please fill in all required fields.");
 }
 
+// Report title mapping
+$reportTitles = [
+    'appointments' => 'Appointments Report',
+    'feedback' => 'Feedback Report',
+    'lecturers' => 'Lecturers Report',
+    'students' => 'Registered Students Report',
+];
+
+$title = $reportTitles[$reportType] ?? 'Unknown Report';
+
 // Create a new TCPDF object
 $pdf = new TCPDF();
 $pdf->AddPage();
 $pdf->SetFont('Helvetica', '', 12);
 
 // Title of the Report
-$pdf->Cell(0, 10, "Report: $reportType from $startDate to $endDate", 0, 1, 'C');
+$pdf->Cell(0, 10, $title, 0, 1, 'C');
+
+// Date Range Below Title
+if (!empty($startDate) && !empty($endDate)) {
+    $pdf->Cell(0, 10, "From: $startDate  To: $endDate", 0, 1, 'C');
+}
+
 $pdf->Ln(10);
 
 // Switch between different report types
@@ -31,11 +47,11 @@ switch ($reportType) {
                 WHERE a.appointment_date BETWEEN '$startDate' AND '$endDate'";
         break;
 
-        case 'feedback':
-            $sql = "SELECT student_id, Email, feedback_text 
-                        FROM feedback 
-                        WHERE feedback_date BETWEEN '$startDate' AND '$endDate'";
-                break;
+    case 'feedback':
+        $sql = "SELECT student_id, Email, feedback_text 
+                FROM feedback 
+                WHERE feedback_date BETWEEN '$startDate' AND '$endDate'";
+        break;
 
     case 'lecturers':
         $sql = "SELECT lecturer_id, name AS lecturer_name, department 

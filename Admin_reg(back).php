@@ -40,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $name = trim($data['name']);
     $admin_id = trim($data['admin_ID']);
     $email = trim($data['email']);
-    $contact_no = $data['contact_no']; //  keep +254
+    $contact_no = $data['contact_no']; // keep +254
     $password = trim($data['password']);
 
     // Validate Name (Only letters and spaces)
@@ -70,21 +70,21 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     // Hash the password
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-    // Check for duplicates (email and contact_no only)
-    $checkStmt = $conn->prepare("SELECT id FROM admin WHERE email = ? OR contact_no = ?");
-    $checkStmt->bind_param("ss", $email, $contact_no); 
+    // Check for duplicates (email, contact_no, and admin_ID)
+    $checkStmt = $conn->prepare("SELECT id FROM admin WHERE email = ? OR contact_no = ? OR admin_ID = ?");
+    $checkStmt->bind_param("sss", $email, $contact_no, $admin_id); // added admin_id
     $checkStmt->execute();
     $checkStmt->store_result();
 
     if ($checkStmt->num_rows > 0) {
         $checkStmt->close();
-        echo json_encode(["status" => "error", "message" => "Email or contact number already exists."]);
+        echo json_encode(["status" => "error", "message" => "Email, contact number, or Admin ID already exists."]);
         exit();
     }
 
     $checkStmt->close();
 
-    // Insert into database 
+    // Insert into database
     $stmt = $conn->prepare("INSERT INTO admin (name, admin_ID, email, contact_no, password) VALUES (?, ?, ?, ?, ?)");
     $stmt->bind_param("sisss", $name, $admin_id, $email, $contact_no, $hashed_password);
 

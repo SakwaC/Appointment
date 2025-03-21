@@ -20,7 +20,7 @@
     <div class="logo">
         <img src="Ku_logo.jpeg" alt="System Logo" width="100">
     </div>
-    <button class="back-button" onclick="window.location.href='Admin_land_in.php'">Back</button>
+    <button class="back-button" onclick="window.location.href='land_in.php'">Back</button>
     <div class="container">
         <div class="register-container">
             <h3 class="text-center mb-4">Admin Registration</h3>

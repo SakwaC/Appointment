@@ -29,15 +29,15 @@
         background-color: #333;
     }
     .footer {
-            margin-top: auto;
-            width: 100%;
-            background-color: azure;
-            padding: 10px;
-            text-align: center;
-            font-size: 14px;
-            position: absolute;
-            bottom: 0;
-        }
+        margin-top: auto;
+        width: 100%;
+        background-color: azure;
+        padding: 10px;
+        text-align: center;
+        font-size: 14px;
+        position: absolute;
+        bottom: 0;
+    }
 </style>
 
 <body>
@@ -49,7 +49,7 @@
         <form id="appointmentForm">
             <div class="form-group">
                 <label for="appointmentId">Appointment ID</label>
-                <input type="text" class="form-control" id="appointmentId" name="appointment_id" placeholder="Enter Appointment ID" required>
+                <input type="text" class="form-control" id="appointmentId" name="appointment_id" placeholder="Enter Appointment ID" required readonly>
             </div>
             <div class="form-group">
                 <label for="lecturerComments">Comments</label>
@@ -68,8 +68,16 @@
     </div>
 
     <script>
-        // Allow only today or future dates in the date picker
+        // Extract appointment ID from the URL and set it in the input field
         document.addEventListener("DOMContentLoaded", function() {
+            let urlParams = new URLSearchParams(window.location.search);
+            let appointmentId = urlParams.get("id");
+
+            if (appointmentId) {
+                document.getElementById("appointmentId").value = appointmentId;
+            }
+
+            // Allow only today or future dates in the date picker
             let today = new Date().toISOString().split("T")[0];
             document.getElementById("dateApproved").setAttribute("min", today);
         });
@@ -104,6 +112,6 @@
     </script>
     <div class="footer">
         &copy; 2025 Kenyatta University. All rights reserved.
-    </footer>
+    </div>
 </body>
 </html>

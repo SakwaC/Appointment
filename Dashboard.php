@@ -47,6 +47,9 @@
             flex: 1;
             text-align: center;
         }
+        h5{
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
