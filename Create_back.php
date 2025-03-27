@@ -72,12 +72,37 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $stmt->bind_param("sssssss", $appointment_id, $student_id, $department, $lecturer, $appointment_date, $time_of_appointment, $appointment_description);
 
     if ($stmt->execute()) {
+        error_log("Appointment Created Successfully. Appointment ID: " . $appointment_id);
+    
+        // Get the day of the week for the appointment
+        $day_of_week = date("l", strtotime($appointment_date)); // e.g., "Monday"
+    
+        // Update the lecturer's schedule start_time by adding 20 minutes
+        $update_schedule_query = "
+            UPDATE lecturer_schedule 
+            SET start_time = ADDTIME(start_time, '00:30') 
+            WHERE lecturer_id = ? AND days = ?";
+        
+        $stmt_update_schedule = $conn->prepare($update_schedule_query);
+        if ($stmt_update_schedule) {
+            $stmt_update_schedule->bind_param("ss", $lecturer, $day_of_week);
+            if ($stmt_update_schedule->execute()) {
+                error_log("Lecturer schedule updated successfully for Lecturer_ID: " . $lecturer . " on " . $day_of_week);
+            } else {
+                error_log("Error updating lecturer schedule: " . $stmt_update_schedule->error);
+            }
+            $stmt_update_schedule->close();
+        } else {
+            error_log("Error preparing lecturer schedule update query: " . $conn->error);
+        }
+    
         echo json_encode([
             "status" => "success",
             "message" => "Appointment created successfully",
             "appointment_id" => $appointment_id
         ]);
     } else {
+        error_log("Database Error (Insert Execute): " . $stmt->error);
         echo json_encode([
             "status" => "error",
             "message" => "Failed to create appointment",

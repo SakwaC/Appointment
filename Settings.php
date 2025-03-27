@@ -113,17 +113,25 @@
        $(document).ready(function() {
     if (!localStorage.getItem('lecturer_logged_in')) {
         console.log("Auth Check: Redirecting to login");
-        window.location.href = 'login.html';
+        window.location.href = 'LecturerLogin.php';
         return;
     }
 
     let currentCell;
     let currentScheduleId;
 
+    function formatTimeWithoutSeconds(timeString) {
+        if (timeString && timeString.length >= 5) {
+            return timeString.slice(0, 5); // Extracts HH:MM
+        }
+        return timeString; // Return original if format is unexpected
+    }
+
     function loadSchedule() {
         const lecturerId = localStorage.getItem('lecturer_id');
         const sessionId = localStorage.getItem('session_id');
         console.log("loadSchedule called. Lecturer ID:", lecturerId, "Session ID:", sessionId);
+
 
         $.ajax({
             url: "http://localhost/Appointments/get_schedule.php",

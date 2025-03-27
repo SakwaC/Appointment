@@ -18,9 +18,7 @@ if (in_array($origin, $allowedOrigins)) {
     header('Access-Control-Allow-Methods: GET, OPTIONS');
 
 } else {
-    // Optionally, handle invalid origin (e.g., log, send error)
-    // header("HTTP/1.1 403 Forbidden");
-    // exit;
+    
 }
 
 header('Content-Type: application/json');

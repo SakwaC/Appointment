@@ -25,18 +25,76 @@
             margin-bottom: 20px;
         }
         .report-section {
-            background-color: #ffffff;
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            margin-top: 40px;
-            margin-bottom: 40px;
-            border: 1px solid #007bff;
-        }
+         display: grid;
+         grid-template-columns: repeat(3, 1fr); /* Creates three equal columns */
+         gap: 20px;
+         justify-content: center;
+         }
+
+     .report-container {
+    background-color: #ffffff;
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    border: 1px solid #007bff;
+    min-width: 300px;
+    text-align: center;
+}
+
         .navbar .logout-btn {
             position: absolute;
             right: 20px;
         }
+
+        .feedback-container {
+    width: 80%;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 10px;
+    background: #ffffff; /* White background */
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1); /* Soft shadow effect */
+    text-align: center;
+}
+
+.feedback-header {
+    font-size: 1.5rem;
+    color: #007bff; /* Bootstrap primary blue */
+    font-weight: bold;
+}
+
+.feedback-card {
+    padding: 20px;
+    border-radius: 10px;
+    background: #f8f9fa; /* Light gray background */
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.feedback-list {
+    padding: 0;
+    list-style: none;
+    text-align: left;
+    max-height: 200px;
+    overflow-y: auto; /* Scrollable feedback */
+}
+
+.feedback-list li {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    font-size: 1rem;
+    color: #333;
+}
+
+.feedback-list li:last-child {
+    border-bottom: none;
+}
+
+.view-feedback-btn {
+    margin-top: 10px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+
         footer {
             background-color: #007bff;
             color: white;
@@ -87,37 +145,57 @@
                 </div>
             </div>
         </div>
+        <h2 class="text-center text-uppercase fw-bold text-primary border-bottom pb-2">Reports</h2>
+        <div class="container mt-4">
+    <div class="row">
+        <!-- First Column: General Report -->
+        <div class="col-md-4">
+            <form action="generate_admin_report.php" method="POST" class="text-center border p-3">
+                <h4 class="text-primary">General Report</h4>
+                <select name="report_type" class="form-control mb-3" required>
+                    <option value="">Select Report Type</option>
+                    <option value="appointments">Booked Appointments Report</option>
+                    <option value="feedback">Feedback Report</option>
+                    <option value="lecturers">Lecturers and Departments Report</option>
+                    <option value="students">Registered Students Report</option>
+                </select>
 
-        <div class="report-section">
-            <h4 class="text-center text-primary">Generate Reports</h4>
+                <select name="department" id="department" class="form-control mb-3">
+                    <option value="">Select Department</option>
+                    <option value="Computing and Information Science">Computing and Information Science</option>
+                    <option value="Biology and Chemistry">Biology and Chemistry</option>
+                    <option value="Biotechnology">Biotechnology</option>
+                    <option value="Accounting">Accounting</option>
+                    <option value="Business Administration">Business Administration</option>
+                    <option value="Mechanical">Mechanical</option>
+                    <option value="Electrical">Electrical</option>
+                    <option value="Geography">Geography</option>
+                    <option value="English Literature">English Literature</option>
+                </select>
 
-            <div id="reportSelection">
-                <form action="generate_admin_report.php" method="POST" class="text-center">
-                    <select name="report_type" class="form-control mb-3" required>
-                        <option value="">Select Report Type</option>
-                        <option value="appointments">Appointments Report</option>
-                        <option value="feedback">Feedback Report</option>
-                        <option value="lecturers">Lecturers and Departments Report</option>
-                        <option value="students">Registered Students Report</option>
-                    </select>
-                    <input type="date" name="start_date" class="form-control mb-3" required>
-                    <input type="date" name="end_date" class="form-control mb-3" required>
-                    <button type="submit" class="btn btn-primary">Download Report</button>
-                </form>
-            </div>
+                <input type="date" name="start_date" class="form-control mb-3" required>
+                <input type="date" name="end_date" class="form-control mb-3" required>
+                <button type="submit" class="btn btn-primary w-100">Download Report</button>
+            </form>
+        </div>
 
-            <div id="lecturerAppointment" class="mt-4">
+        <!-- Second Column: Appointments by Lecturer -->
+        <div class="col-md-4">
+            <div id="lecturerAppointment" class="border p-3">
                 <h4 class="text-center text-primary">Appointments by Lecturer</h4>
                 <form id="lecturerAppointmentForm" class="text-center">
                     <input type="text" id="lecturerIdInput" class="form-control mb-3" placeholder="Enter Lecturer ID" required>
                     <input type="date" id="lecturerStartDate" class="form-control mb-3" required>
                     <input type="date" id="lecturerEndDate" class="form-control mb-3" required>
-                    <button type="button" onclick="generateLecturerAppointmentsReport()" class="btn btn-primary">Generate Report</button>
+                    <button type="button" onclick="generateLecturerAppointmentsReport()" class="btn btn-primary w-100">Generate Report</button>
                 </form>
                 <div id="lecturerAppointmentReportArea" class="mt-3"></div>
             </div>
+        </div>
 
-            <div id="schoolDepartmentDate" class="mt-4">
+        <!-- Third Column: Students by School/Department -->
+        <div class="col-md-4">
+            <div id="schoolDepartmentDate" class="border p-3">
                 <h4 class="text-center text-primary">Students by School/Department</h4>
                 <form id="schoolDepartmentForm" class="text-center">
                     <select id="school" class="form-control mb-3" required>
@@ -127,51 +205,58 @@
                         <option value="SEA">SEA</option>
                         <option value="School of Education">School of Education</option>
                     </select>
-                    <select id="department" class="form-control mb-3" required>
+                    <select id="schoolDepartment" class="form-control mb-3" required>
                         <option value="">Select Department</option>
                     </select>
                     <input type="date" id="schoolStartDate" class="form-control mb-3" required>
                     <input type="date" id="schoolEndDate" class="form-control mb-3" required>
-                    <button type="button" onclick="generateStudentsByDepartmentReport()" class="btn btn-primary">Generate Report</button>
+                    <button type="button" onclick="generateStudentsByDepartmentReport()" class="btn btn-primary w-100">Generate Report</button>
                 </form>
                 <div id="schoolDepartmentReportArea" class="mt-3"></div>
             </div>
         </div>
-
-        <div class="mt-4">
-            <h4 class="text-center text-primary">Student Feedback</h4>
-            <div class="card text-center p-3">
-                <h4>Total Feedback</h4>
-                <h2>
-                    <?php
-                    $result = $conn->query("SELECT COUNT(*) as count FROM feedback");
-                    $row = $result->fetch_assoc();
-                    echo $row['count'];
-                    ?>
-                </h2>
-                <h5>Recent Feedback</h5>
-                <ul class="list-group">
-                    <?php
-                    $result = $conn->query("SELECT feedback_text FROM feedback ORDER BY feedback_text DESC LIMIT 3");
-                    if ($result->num_rows > 0) {
-                        while ($row = $result->fetch_assoc()) {
-                            echo "<li class='list-group-item'>" . $row['feedback_text'] . "</li>";
-                        }
-                    } else {
-                        echo "<li class='list-group-item'>No feedback available</li>";
-                    }
-                    ?>
-                </ul>
-                <a href="#" onclick="showAllFeedback()" class="btn btn-link">View All Feedback</a>
-            </div>
-        </div>
     </div>
+</div>
+
+   
+
+<div class="feedback-container">
+    <h4 class="feedback-header">Student Feedback</h4>
+    
+    <div class="feedback-card">
+        <h4>Total Feedback</h4>
+        <h2>
+            <?php
+            $result = $conn->query("SELECT COUNT(*) as count FROM feedback");
+            $row = $result->fetch_assoc();
+            echo $row['count'];
+            ?>
+        </h2>
+        
+        <h5>Recent Feedback</h5>
+        <ul class="feedback-list">
+            <?php
+            $result = $conn->query("SELECT feedback_text FROM feedback ORDER BY feedback_text DESC LIMIT 3");
+            if ($result->num_rows > 0) {
+                while ($row = $result->fetch_assoc()) {
+                    echo "<li>" . $row['feedback_text'] . "</li>";
+                }
+            } else {
+                echo "<li>No feedback available</li>";
+            }
+            ?>
+        </ul>
+
+        <a href="#" onclick="showAllFeedback()" class="btn btn-link view-feedback-btn">View All Feedback</a>
+    </div>
+</div>
+
 
     <footer>&copy; <?php echo date("Y"); ?> Lecturer-Student Appointment System | All Rights Reserved.</footer>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
     const schoolSelect = document.getElementById('school');
-    const departmentSelect = document.getElementById('department');
+    const schoolDepartmentSelect = document.getElementById('schoolDepartment'); // Updated ID
 
     const schoolDepartments = {
         'SPAS': ['Computing and Information Science', 'Biology and Chemistry', 'Biotechnology'],
@@ -180,20 +265,24 @@
         'School of Education': ['Geography', 'English Literature']
     };
 
-    schoolSelect.addEventListener('change', function() {
-        const selectedSchool = schoolSelect.value;
-        departmentSelect.innerHTML = '<option value="">Select Department</option>';
+    schoolSelect.addEventListener('change', function () {
+        console.log("School selected:", schoolSelect.value); // Debugging
 
-        if (schoolDepartments[selectedSchool]) {
-            schoolDepartments[selectedSchool].forEach(department => {
-                const option = document.createElement('option');
+        schoolDepartmentSelect.innerHTML = '<option value="">Select Department</option>';
+
+        if (schoolDepartments[schoolSelect.value]) {
+            schoolDepartments[schoolSelect.value].forEach(department => {
+                let option = document.createElement('option');
                 option.value = department;
-                option.textContent = department;
-                departmentSelect.appendChild(option);
+                option.innerText = department;
+                schoolDepartmentSelect.appendChild(option);
             });
         }
+
+        console.log("Updated department options:", schoolDepartmentSelect.innerHTML); // Debugging
     });
 });
+
 
 function showAllFeedback() {
     const feedbackList = document.querySelector('.list-group');
@@ -214,7 +303,7 @@ function showAllFeedback() {
         });
 }
 
-function generateLecturerAppointmentsReport() {
+    function generateLecturerAppointmentsReport() {
     const lecturerInput = document.getElementById("lecturerIdInput");
     const startDateInput = document.getElementById("lecturerStartDate");
     const endDateInput = document.getElementById("lecturerEndDate");

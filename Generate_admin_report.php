@@ -7,6 +7,7 @@ require_once 'db2_connect.php';
 $reportType = $_POST['report_type'] ?? '';
 $startDate = $_POST['start_date'] ?? '';
 $endDate = $_POST['end_date'] ?? '';
+$department = $_POST['department'] ?? ''; // Added department filter
 
 if (empty($reportType) || empty($startDate) || empty($endDate)) {
     die("Please fill in all required fields.");
@@ -31,20 +32,29 @@ $pdf->SetFont('Helvetica', '', 12);
 $pdf->Cell(0, 10, $title, 0, 1, 'C');
 
 // Date Range Below Title
-if (!empty($startDate) && !empty($endDate)) {
-    $pdf->Cell(0, 10, "From: $startDate  To: $endDate", 0, 1, 'C');
+$pdf->Cell(0, 10, "From: $startDate  To: $endDate", 0, 1, 'C');
+
+// Add department filter (for Appointments and Students reports)
+if (!empty($department) && ($reportType === 'appointments' || $reportType === 'students')) {
+    $pdf->Cell(0, 10, "Department: $department", 0, 1, 'C');
 }
 
 $pdf->Ln(10);
 
-// Switch between different report types
+// SQL query based on selected report type
 switch ($reportType) {
     case 'appointments':
-        $sql = "SELECT a.Appointment_ID, s.name AS student_name, l.name AS lecturer_name, a.appointment_date, a.time_of_appointment, a.status
+        $sql = "SELECT a.Appointment_ID, s.name AS student_name, l.name AS lecturer_name, l.department, 
+                       a.appointment_date, a.time_of_appointment, a.status 
                 FROM appoint a 
                 JOIN students s ON a.student_id = s.Student_ID 
-                JOIN lecturer l ON a.lecturer_id = l.lecturer_id
+                JOIN lecturer l ON a.lecturer_id = l.lecturer_id 
                 WHERE a.appointment_date BETWEEN '$startDate' AND '$endDate'";
+
+        // Apply department filter if selected
+        if (!empty($department)) {
+            $sql .= " AND l.department = '$department'";
+        }
         break;
 
     case 'feedback':
@@ -54,13 +64,17 @@ switch ($reportType) {
         break;
 
     case 'lecturers':
-        $sql = "SELECT lecturer_id, name AS lecturer_name, department 
-                FROM lecturer";
+        $sql = "SELECT lecturer_id, name AS lecturer_name, department FROM lecturer";
         break;
 
     case 'students':
         $sql = "SELECT Student_ID, Name, Email, Contact_No, school, department, Course, Registration_Date 
                 FROM students";
+
+        // Apply department filter if selected
+        if (!empty($department)) {
+            $sql .= " WHERE department = '$department'";
+        }
         break;
 
     default:
@@ -69,6 +83,7 @@ switch ($reportType) {
         exit();
 }
 
+// Execute the query
 $result = $conn->query($sql);
 
 if ($result && $result->num_rows > 0) {

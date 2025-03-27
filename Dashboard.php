@@ -69,7 +69,7 @@
                     <li class="nav-item"><a class="nav-link" href="Dashboard.php">Dashboard Overview</a></li>
                     <li class="nav-item"><a class="nav-link" href="Upcoming_appointments.php">Upcoming Appointments</a></li>
                     <li class="nav-item"><a class="nav-link" href="past_appointment.php">Past Appointments</a></li>
-                    <li class="nav-item"><a class="nav-link" href="Create_appointment.php">Create Appointment</a></li>
+                    <li class="nav-item"><a class="nav-link" href="Create_appointment.php">Book Appointment</a></li>
                     <li class="nav-item"><a class="nav-link" href="Feedback.php">Feedback</a></li>
                     <li class="nav-item"><a class="nav-link" href="reports.php">Reports</a></li>
                 </ul>

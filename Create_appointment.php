@@ -24,18 +24,19 @@
             cursor: pointer;
             font-size: 14px;
         }
+        .past-day-current-week {
+    opacity: 0.6; 
+    color: #999;   
+    pointer-events: none; 
+}
     </style>
 </head>
 <body>
     <button class="back-button" onclick="window.location.href='Dashboard.php'">Back</button>
     <div class="container mt-5">
-        <h2>Create Appointment</h2>
+        <h2>Book Appointment</h2>
         <form id="appointmentForm">
             <input type="hidden" id="studentId" name="student_id" value="<?php echo $studentID; ?>">
-            <div class="form-group">
-                <label for="appointmentDate">Appointment Date:</label>
-                <input type="date" class="form-control" id="appointmentDate" name="appointment_date" required>
-            </div>
             <div class="form-group">
                 <label for="department">Select Department:</label>
                 <select class="form-control" id="department" name="department" required>
@@ -57,7 +58,7 @@
                                 <th>Day</th>
                                 <th>Start Time</th>
                                 <th>End Time</th>
-                                <th>Meeting Duration</th>
+                                
                             </tr>
                         </thead>
                         <tbody></tbody>
@@ -74,6 +75,10 @@
                 <label for="appointmentDescription">Describe the Appointment:</label>
                 <textarea class="form-control" id="appointmentDescription" name="appointment_description" rows="3" required></textarea>
             </div>
+            <div class="form-group">
+                <label for="appointmentDate">Appointment Date:</label>
+                <input type="date" class="form-control" id="appointmentDate" name="appointment_date" required>
+            </div>
             <div class="text-center">
                 <button type="submit" class="btn btn-primary">Submit</button>
             </div>
@@ -81,6 +86,39 @@
     </div>
     <script>
         $(document).ready(function () {
+            // Function to get the current week's dates (Monday to Sunday)
+            function getWeekDates() {
+                let today = new Date();
+                let dayOfWeek = today.getDay(); 
+                let monday = new Date(today);
+                monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); // Get Monday of this week
+
+                let dates = [];
+                for (let i = 0; i < 7; i++) {
+                    let date = new Date(monday);
+                    date.setDate(monday.getDate() + i);
+                    let formattedDate = date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+                    dates.push({ date: formattedDate, day: date.toLocaleDateString('en-US', { weekday: 'long' }) });
+                }
+                return dates;
+            }
+
+            // Populate the Appointment Date dropdown with the current week's dates
+            function populateWeekDates() {
+            let weekDates = getWeekDates();
+             let appointmentDateDropdown = $('#appointmentDate');
+            appointmentDateDropdown.empty();
+             let today = new Date();
+             let todayFormatted = today.toISOString().split('T')[0];
+
+             weekDates.forEach(dateInfo => {
+             if (dateInfo.date >= todayFormatted) { // Only add dates that are today or in the future
+            appointmentDateDropdown.append(`<option value="${dateInfo.date}">${dateInfo.day} (${dateInfo.date})</option>`);
+            }
+           });
+           }
+            // Call the function to populate the date dropdown when the page loads
+            populateWeekDates();
             const studentId = localStorage.getItem('student_id');
             $('#studentId').val(studentId);
             let today = new Date().toISOString().split('T')[0];
@@ -105,45 +143,138 @@
             });
 
             $('#lecturer, #appointmentDate').change(function () {
-                let lecturerId = $('#lecturer').val();
-                let appointmentDate = $('#appointmentDate').val();
-                $('#lecturerSchedule tbody').empty();
-                $('#appointmentTime').empty().append('<option value="">Select Time</option>');
+    let lecturerId = $('#lecturer').val();
+    let appointmentDate = $('#appointmentDate').val();
+    $('#lecturerSchedule tbody').empty();
+    $('#appointmentTime').empty().append('<option value="">Select Time</option>');
 
-                if (lecturerId && appointmentDate) {
-                    $.getJSON(`http://localhost/Appointments/get_lecturer_schedule.php?lecturer_ID=${lecturerId}`, function(data) {
-                        if (data.data && data.data.length > 0) {
-                            $.each(data.data, function(index, value) {
-                                $('#lecturerSchedule tbody').append(`
-                                    <tr>
-                                        <td>${value.days}</td>
-                                        <td>${value.start_time}</td>
-                                        <td>${value.end_time}</td>
-                                        <td>${value.meeting_duration} mins</td>
-                                    </tr>
-                                `);
-                            });
-                        } else {
-                            $('#lecturerSchedule tbody').append('<tr><td colspan="4" class="text-center">No schedule available</td></tr>');
-                        }
-                    }).fail(function(jqXHR, textStatus, errorThrown) {
-                        console.log("AJAX Error (schedule):", { status: textStatus, error: errorThrown, response: jqXHR.responseText });
-                    });
-
-                    $.getJSON(`http://localhost/Appointments/get_available_slots.php?lecturer_ID=${lecturerId}&appointment_date=${appointmentDate}`, function(data) {
-                        if (data.time_slots && data.time_slots.length > 0) {
-                            $.each(data.time_slots, function(index, slot) {
-                                $('#appointmentTime').append(`<option value="${slot}">${slot}</option>`);
-                            });
-                        } else {
-                            $('#appointmentTime').append('<option value="">No slots available for this date</option>');
-                        }
-                    }).fail(function(jqXHR, textStatus, errorThrown) {
-                        console.log("AJAX Error (slots):", { status: textStatus, error: errorThrown, response: jqXHR.responseText });
-                    });
+    if (lecturerId) {
+        $.getJSON(`http://localhost/Appointments/get_lecturer_schedule.php?lecturer_ID=${lecturerId}`, function(data) {
+            if (data.data && data.data.length > 0) {
+                // Function to format time (remove seconds)
+                function formatTime(timeString) {
+                    if (timeString) {
+                        return timeString.split(':').slice(0, 2).join(':');
+                    }
+                    return '';
                 }
-            });
 
+                const $scheduleBody = $('#lecturerSchedule tbody').empty(); // Get a reference to the tbody
+                const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+                const today = new Date();
+                const todayDay = today.toLocaleDateString('en-US', { weekday: 'long' });
+                const currentDayIndex = daysOfWeek.indexOf(todayDay);
+                const selectedDate = appointmentDate ? new Date(appointmentDate) : null;
+
+                $.each(data.data, function(index, value) {
+                    let rowClass = '';
+                    const scheduleDayIndex = daysOfWeek.indexOf(value.days);
+
+                    if (selectedDate) {
+                        const selectedDateObj = new Date(selectedDate);
+                        const todayObj = new Date();
+                        todayObj.setHours(0, 0, 0, 0); // Compare only dates
+
+                        // Get the current week's Monday
+                        const currentMonday = new Date(todayObj);
+                        const dayOfWeek = currentMonday.getDay();
+                        currentMonday.setDate(currentMonday.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+                        currentMonday.setHours(0, 0, 0, 0);
+
+                        // Get next week's Monday
+                        const nextMonday = new Date(currentMonday);
+                        nextMonday.setDate(currentMonday.getDate() + 7);
+                        nextMonday.setHours(0, 0, 0, 0);
+
+                        const isCurrentWeek = selectedDateObj >= currentMonday && selectedDateObj < nextMonday;
+
+                        if (isCurrentWeek && selectedDateObj.toDateString() === todayObj.toDateString()) {
+                            const isPastDayCurrentWeek = scheduleDayIndex < currentDayIndex;
+                            if (isPastDayCurrentWeek) {
+                                rowClass = 'past-day-current-week';
+                            }
+                        } else if (isCurrentWeek && selectedDateObj < todayObj) {
+                            rowClass = 'past-day-current-week';
+                        }
+                        // If selectedDate is not in the current week, no blurring
+                    } else {
+                        // If no appointmentDate is selected, and it's the current week view on load
+                        const isPastDayCurrentWeek = scheduleDayIndex < currentDayIndex;
+                        if (isPastDayCurrentWeek) {
+                            rowClass = 'past-day-current-week';
+                        }
+                    }
+
+                    const row = $(`
+                        <tr class="${rowClass}">
+                            <td>${value.days}</td>
+                            <td>${formatTime(value.start_time)}</td>
+                            <td>${formatTime(value.end_time)}</td>
+                            
+                        </tr>
+                    `);
+
+                    // Disable click action for past days in the current week
+                    if (selectedDate) {
+                        const selectedDateObj = new Date(selectedDate);
+                        const todayObj = new Date();
+                        todayObj.setHours(0, 0, 0, 0);
+
+                        const currentMonday = new Date(todayObj);
+                        const dayOfWeek = currentMonday.getDay();
+                        currentMonday.setDate(currentMonday.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+                        currentMonday.setHours(0, 0, 0, 0);
+
+                        const nextMonday = new Date(currentMonday);
+                        nextMonday.setDate(currentMonday.getDate() + 7);
+                        nextMonday.setHours(0, 0, 0, 0);
+
+                        const isCurrentWeek = selectedDateObj >= currentMonday && selectedDateObj < nextMonday;
+
+                        if (isCurrentWeek && selectedDateObj.toDateString() === todayObj.toDateString()) {
+                            const isPastDayCurrentWeek = scheduleDayIndex < currentDayIndex;
+                            if (isPastDayCurrentWeek) {
+                                row.on('click', function(event) {
+                                    event.preventDefault();
+                                });
+                            }
+                        } else if (isCurrentWeek && selectedDateObj < todayObj) {
+                            row.on('click', function(event) {
+                                event.preventDefault();
+                            });
+                        }
+                    } else {
+                        const isPastDayCurrentWeek = scheduleDayIndex < currentDayIndex;
+                        if (isPastDayCurrentWeek) {
+                            row.on('click', function(event) {
+                                event.preventDefault();
+                            });
+                        }
+                    }
+
+                    $scheduleBody.append(row);
+                });
+            } else {
+                $('#lecturerSchedule tbody').append('<tr><td colspan="4" class="text-center">No schedule available</td></tr>');
+            }
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.log("AJAX Error (schedule):", { status: textStatus, error: errorThrown, response: jqXHR.responseText });
+        });
+
+        $.getJSON(`http://localhost/Appointments/get_available_slots.php?lecturer_ID=${lecturerId}&appointment_date=${appointmentDate}`, function(data) {
+            if (data.time_slots && data.time_slots.length > 0) {
+                $('#appointmentTime').empty().append('<option value="">Select Time</option>');
+                $.each(data.time_slots, function(index, slot) {
+                    $('#appointmentTime').append(`<option value="${slot}">${slot}</option>`);
+                });
+            } else {
+                $('#appointmentTime').empty().append('<option value="">No slots available for this date</option>');
+            }
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            console.log("AJAX Error (slots):", { status: textStatus, error: errorThrown, response: jqXHR.responseText });
+        });
+    }
+});
             $('#appointmentForm').submit(function (event) {
                 event.preventDefault();
                 let appointmentTime = $('#appointmentTime').val();
@@ -185,6 +316,30 @@
                         alert("An error occurred while processing the request.");
                     }
                 });
+            });
+            $('#lecturerSchedule tbody').on('click', 'tr', function () {
+                $('#lecturerSchedule tbody tr').css("background-color", ""); 
+                $(this).css("background-color", "#b3d7ff");
+
+                let selectedSchedule = {
+                    day: $(this).find('td:nth-child(1)').text(), // Get the selected day
+                    start_time: $(this).find('td:nth-child(2)').text(), // Get start time
+                    end_time: $(this).find('td:nth-child(3)').text(),
+                    duration: $(this).find('td:nth-child(4)').text()
+                };
+
+                console.log("Selected Schedule:", selectedSchedule);
+
+                // Find the corresponding date from the dropdown
+                let matchingDate = $('#appointmentDate option').filter(function () {
+                    return $(this).text().includes(selectedSchedule.day);
+                }).val();
+
+                // Set the appointment date and time automatically
+                if (matchingDate) {
+                    $('#appointmentDate').val(matchingDate);
+                }
+                $('#appointmentTime').html(`<option value="${selectedSchedule.start_time}">${selectedSchedule.start_time}</option>`);
             });
         });
     </script>
