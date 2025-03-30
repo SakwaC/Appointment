@@ -12,7 +12,6 @@ header('Accept-Ranges: bytes');
 if (isset($_GET['lecturerId']) && !empty($_GET['lecturerId'])) {
     $lecturerId = $_GET['lecturerId'];
 
-    // Get dynamic date range from URL, fallback to database values
     $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : null;
     $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date("Y-m-d");
 
@@ -28,16 +27,14 @@ if (isset($_GET['lecturerId']) && !empty($_GET['lecturerId'])) {
         $lecturerID = htmlspecialchars($lecturer['lecturer_ID']);
         $lecturerDepartment = htmlspecialchars($lecturer['Department']);
     } else {
-        // Invalid lecturer ID
         $pdf = new TCPDF();
         $pdf->AddPage();
         $pdf->SetFont('helvetica', '', 12);
-        $pdf->Cell(0, 10, 'Invalid Lecturer ID.', 0, 1, 'C');
+        $pdf->Cell(0, 10, 'Invalid Lecturer ID. Please check and try again.', 0, 1, 'C');
         $pdf->Output('lecturer_appointments_report.pdf', 'I');
         exit();
     }
 
-    // Fetch the first available appointment date if start_date is not provided
     if (!$startDate) {
         $stmtFirstDate = $conn->prepare("SELECT MIN(appointment_date) AS first_date FROM appoint WHERE lecturer_id = ?");
         $stmtFirstDate->bind_param("i", $lecturerId);
@@ -47,7 +44,6 @@ if (isset($_GET['lecturerId']) && !empty($_GET['lecturerId'])) {
         $startDate = $rowFirstDate['first_date'] ? $rowFirstDate['first_date'] : $endDate;
     }
 
-    // Fetch appointments within the date range
     $stmtAppointments = $conn->prepare("SELECT s.Name, s.Student_ID, a.appointment_date, a.time_of_appointment, a.Description, a.status 
                                         FROM appoint a 
                                         JOIN students s ON a.student_id = s.Student_ID 
@@ -57,82 +53,86 @@ if (isset($_GET['lecturerId']) && !empty($_GET['lecturerId'])) {
     $stmtAppointments->execute();
     $resultAppointments = $stmtAppointments->get_result();
 
-    // Ensure no output before PDF generation
     if (ob_get_length()) {
         ob_end_clean();
     }
 
-    // Create PDF document
-    $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+    class CustomPDF extends TCPDF {
+        public function Footer() {
+            $this->SetY(-20);
+            $this->SetFont('helvetica', 'I', 8);
+            $this->Cell(0, 10, 'Page ' . $this->getAliasNumPage() . ' of ' . $this->getAliasNbPages(), 0, 0, 'C');
+            $this->Ln(5);
+            $this->Cell(0, 10, 'Kenyatta University Student Lecturer Appointment System', 0, 0, 'C');
+        }
+    }
 
-    // Set document information
+    $pdf = new CustomPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);
+    $pdf->SetMargins(15, 15, 15);
+    $pdf->SetAutoPageBreak(TRUE, 20);
+
     $pdf->SetCreator(PDF_CREATOR);
     $pdf->SetAuthor('Your Name');
     $pdf->SetTitle('Lecturer Appointments Report');
     $pdf->SetSubject('Appointments');
 
-    // Add a page
     $pdf->AddPage();
-    $pdf->SetFont('helvetica', '', 14);
 
-    // Report Title
+    $pdf->SetFont('helvetica', 'I', 10);
+    $pdf->Cell(0, 10, 'Generated on: ' . date('Y-m-d H:i:s'), 0, 1, 'R');
+
+    $pdf->Image('C:/Users/pc/Downloads/downloads/htdocs/Appointments/Ku_logo.jpeg', 15, 10, 25, 25, 'JPEG');
+    $pdf->SetFont('helvetica', 'B', 16);
     $pdf->Cell(0, 10, 'Lecturer Appointments Report', 0, 1, 'C');
     $pdf->SetFont('helvetica', '', 12);
     $pdf->Cell(0, 10, "From: $startDate To: $endDate", 0, 1, 'C');
-    $pdf->Ln(5); // Add space
+    $pdf->Ln(5);
 
-    // Lecturer Details
-    $pdf->SetFont('helvetica', '', 11);
+    $pdf->SetFont('helvetica', 'B', 11);
     $pdf->Cell(0, 10, "Lecturer Name: $lecturerName", 0, 1, 'L');
     $pdf->Cell(0, 10, "Lecturer ID: $lecturerID", 0, 1, 'L');
     $pdf->Cell(0, 10, "Department: $lecturerDepartment", 0, 1, 'L');
-    $pdf->Ln(5); // Space before table
+    $pdf->Ln(5);
 
     if ($resultAppointments->num_rows > 0) {
-        // Table header
-        $html = '<table border="1" cellpadding="5">
+        $html = '<table border="1" cellpadding="6">
                     <thead>
-                        <tr style="background-color:#f2f2f2;">
-                            <th>Student Name</th>
-                            <th>Student ID No</th>
-                            <th>Date</th>
-                            <th>Time</th>
-                            <th>Reason</th>
-                            <th>Status</th>
+                        <tr style="background-color:#f2f2f2; font-weight: bold; text-align: center;">
+                            <th style="width: 20%;">Student Name</th>
+                            <th style="width: 20%;">Student ID</th>
+                            <th style="width: 15%;">Date</th>
+                            <th style="width: 15%;">Time</th>
+                            <th style="width: 20%;">Reason</th>
+                            <th style="width: 15%;">Status</th>
                         </tr>
                     </thead>
                     <tbody>';
 
-        // Table rows
         while ($row = $resultAppointments->fetch_assoc()) {
-            $html .= '<tr>';
-            $html .= '<td>' . htmlspecialchars($row['Name']) . '</td>';
-            $html .= '<td>' . htmlspecialchars($row['Student_ID']) . '</td>';
-            $html .= '<td>' . htmlspecialchars($row['appointment_date']) . '</td>';
-            $html .= '<td>' . htmlspecialchars($row['time_of_appointment']) . '</td>';
-            $html .= '<td>' . htmlspecialchars($row['Description']) . '</td>';
-            $html .= '<td>' . htmlspecialchars($row['status']) . '</td>';
+            $html .= '<tr style="text-align: center;">';
+            $html .= '<td style="width: 20%;">' . htmlspecialchars($row['Name']) . '</td>';
+            $html .= '<td style="width: 20%;">' . htmlspecialchars($row['Student_ID']) . '</td>';
+            $html .= '<td style="width: 15%;">' . htmlspecialchars($row['appointment_date']) . '</td>';
+            $html .= '<td style="width: 15%;">' . htmlspecialchars($row['time_of_appointment']) . '</td>';
+            $html .= '<td style="width: 20%;">' . htmlspecialchars($row['Description']) . '</td>';
+            $html .= '<td style="width: 15%;">' . htmlspecialchars($row['status']) . '</td>';
             $html .= '</tr>';
         }
 
         $html .= '</tbody></table>';
         $pdf->writeHTML($html, true, false, true, false, '');
     } else {
-        // No appointments found
         $pdf->Cell(0, 10, 'No appointments found within the selected date range.', 0, 1, 'C');
     }
 
-    // Output the PDF
     $pdf->Output('lecturer_appointments_report.pdf', 'I');
-
     exit();
 }
 
-// If no lecturer ID is provided
 $pdf = new TCPDF();
 $pdf->AddPage();
 $pdf->SetFont('helvetica', '', 12);
-$pdf->Cell(0, 10, 'No Lecturer ID Provided.', 0, 1, 'C');
+$pdf->Cell(0, 10, 'No Lecturer ID Provided. Please enter a valid ID.', 0, 1, 'C');
 $pdf->Output('lecturer_appointments_report.pdf', 'I');
 exit();
 ?>

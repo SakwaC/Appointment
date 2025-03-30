@@ -109,3 +109,8 @@ Stack trace:
 [18-Mar-2025 14:37:07 Europe/Berlin] No appointments found for Student ID: J31/7104/2021 between 2025-03-19 and 2025-03-20
 [18-Mar-2025 17:17:16 Europe/Berlin] No appointments found for Student ID: J31/7104/2021 between 2025-03-16 and 2025-03-20
 [19-Mar-2025 21:05:20 Europe/Berlin] No appointments found for Student ID: B11/0660/2021 between 2025-03-17 and 2025-03-21
+[30-Mar-2025 10:25:47 Europe/Berlin] PHP Fatal error:  Uncaught ArgumentCountError: The number of variables must match the number of parameters in the prepared statement in C:\Users\pc\Downloads\downloads\htdocs\Appointments\generate_report.php:61
+Stack trace:
+#0 C:\Users\pc\Downloads\downloads\htdocs\Appointments\generate_report.php(61): mysqli_stmt->bind_param('sss', 'J31/7103/2021', '2025-03-16', '2025-04-01')
+#1 {main}
+  thrown in C:\Users\pc\Downloads\downloads\htdocs\Appointments\generate_report.php on line 61

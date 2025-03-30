@@ -319,7 +319,7 @@
             });
             $('#lecturerSchedule tbody').on('click', 'tr', function () {
                 $('#lecturerSchedule tbody tr').css("background-color", ""); 
-                $(this).css("background-color", "#b3d7ff");
+                $(this).css("background-color", "yellow");
 
                 let selectedSchedule = {
                     day: $(this).find('td:nth-child(1)').text(), // Get the selected day

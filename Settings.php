@@ -65,12 +65,7 @@
 
             <div class="form-group">
                 <label for="meeting_duration">Meeting Duration (Minutes):</label>
-                <select id="meeting_duration" name="meeting_duration" class="form-control">
-                    <option value="15">15 mins</option>
-                    <option value="30">30 mins</option>
-                    <option value="45">45 mins</option>
-                    <option value="60">1 hour</option>
-                </select>
+                <input type="text" id="meeting_duration" name="meeting_duration" class="form-control" readonly>
             </div>
 
             <button type="submit" class="btn btn-success">Save Availability</button>
@@ -99,10 +94,10 @@
         <br>
         <label for="editDuration">Duration:</label>
         <select id="editDuration" class="form-control">
-            <option value="15">15 mins</option>
             <option value="30">30 mins</option>
-            <option value="45">45 mins</option>
             <option value="60">1 hour</option>
+            <option value="120">2 hour</option>
+            <option value="180">3 hour</option>
         </select>
         <br>
         <button id="saveEdit" class="btn btn-success">Save</button>
@@ -110,188 +105,209 @@
     </div>
    
     <script>
-       $(document).ready(function() {
-    if (!localStorage.getItem('lecturer_logged_in')) {
-        console.log("Auth Check: Redirecting to login");
-        window.location.href = 'LecturerLogin.php';
-        return;
-    }
-
-    let currentCell;
-    let currentScheduleId;
-
-    function formatTimeWithoutSeconds(timeString) {
-        if (timeString && timeString.length >= 5) {
-            return timeString.slice(0, 5); // Extracts HH:MM
-        }
-        return timeString; // Return original if format is unexpected
-    }
-
-    function loadSchedule() {
-        const lecturerId = localStorage.getItem('lecturer_id');
-        const sessionId = localStorage.getItem('session_id');
-        console.log("loadSchedule called. Lecturer ID:", lecturerId, "Session ID:", sessionId);
-
-
-        $.ajax({
-            url: "http://localhost/Appointments/get_schedule.php",
-            method: "GET",
-            xhrFields: {
-                withCredentials: true
-            },
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Lecturer-ID': lecturerId,
-                'X-Session-ID': sessionId
-            },
-            crossDomain: true,
-            data: {
-                lecturer_id: lecturerId,
-                session_id: sessionId
-            },
-            success: function(response) {
-                console.log("get_schedule success:", response);
-                let tableBody = $("#scheduleTable");
-                tableBody.empty();
-
-                if (typeof response === 'string') {
-                    response = JSON.parse(response);
-                }
-
-                if (response && response.data && response.data.length > 0) {
-                    // Sorting the schedule data
-                    const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-                    response.data.sort((a, b) => {
-                        return dayOrder.indexOf(a.days) - dayOrder.indexOf(b.days);
-                    });
-
-                    response.data.forEach(schedule => {
-                        let row = `<tr data-schedule-id="${schedule.id}">
-                                        <td>${schedule.days}</td>
-                                        <td class="editable" data-field="start_time">${schedule.start_time}</td>
-                                        <td class="editable" data-field="end_time">${schedule.end_time}</td>
-                                        <td class="editable" data-field="meeting_duration">${schedule.meeting_duration} mins</td>
-                                    </tr>`;
-                        tableBody.append(row);
-                    });
-                } else if (response.error) {
-                    tableBody.append("<tr><td colspan='4' class='text-center'>" + response.error + "</td></tr>");
-                } else {
-                    tableBody.append("<tr><td colspan='4' class='text-center'>No schedule available</td></tr>");
-                }
-            },
-            error: function(xhr, status, error) {
-                console.log("get_schedule AJAX Error:", {
-                    status: status,
-                    error: error,
-                    response: xhr.responseText
-                });
+    $(document).ready(function() {
+        function calculateDuration(startTime, endTime) {
+            if (startTime && endTime) {
+                let start = new Date("1970-01-01T" + startTime + "Z");
+                let end = new Date("1970-01-01T" + endTime + "Z");
+                let duration = (end - start) / (1000 * 60); // Convert milliseconds to minutes
+                return duration > 0 ? duration + " minutes" : "Invalid time range";
             }
-        });
-    }
-
-    $("#scheduleTable").on('click', '.editable', function(event) {
-        currentCell = $(this);
-        currentScheduleId = $(this).closest('tr').data('schedule-id');
-        const field = $(this).data('field');
-        const currentText = $(this).text();
-        const rect = this.getBoundingClientRect();
-
-        console.log("Editable cell clicked. Schedule ID:", currentScheduleId, "Field:", field);
-
-        $('#editForm').show();
-        $('#editForm').css({
-            left: rect.left + 'px',
-            top: rect.bottom + 'px'
-        });
-
-        if (field === 'start_time' || field === 'end_time') {
-            $('#editTime').val(currentText);
-            $('#editDuration').hide();
-        } else if (field === 'meeting_duration') {
-            $('#editTime').hide();
-            $('#editDuration').show();
-            $('#editDuration').val(currentText.replace(' mins', ''));
-        }
-    });
-
-    $('#saveEdit').click(function() {
-        const field = currentCell.data('field');
-        let newValue;
-
-        if (field === 'start_time' || field === 'end_time') {
-            newValue = $('#editTime').val();
-        } else if (field === 'meeting_duration') {
-            newValue = $('#editDuration').val();
+            return "";
         }
 
-        console.log("Save Edit clicked. Schedule ID:", currentScheduleId, "Field:", field, "New Value:", newValue);
+        function updateMeetingDurationInTable(row) {
+            const startTime = row.find('td[data-field="start_time"]').text();
+            const endTime = row.find('td[data-field="end_time"]').text();
+            const durationText = calculateDuration(startTime, endTime);
+            row.find('td[data-field="meeting_duration"]').text(durationText);
+        }
 
-        $.ajax({
-            url: "http://localhost/Appointments/update_schedule.php",
-            method: "POST",
-            data: {
-                schedule_id: currentScheduleId,
-                field: field,
-                value: newValue
-            },
-            xhrFields: {
-                withCredentials: true
-            },
-            headers: {
-                'X-Lecturer-ID': localStorage.getItem('lecturer_id'),
-                'X-Session-ID': localStorage.getItem('session_id')
-            },
-            success: function(response) {
-                console.log("update_schedule success:", response);
+        $("#start_time, #end_time").on("change", function() {
+            const startTime = $("#start_time").val();
+            const endTime = $("#end_time").val();
+            $("#meeting_duration").val(calculateDuration(startTime, endTime));
+        });
+
+        if (!localStorage.getItem('lecturer_logged_in')) {
+            console.log("Auth Check: Redirecting to login");
+            window.location.href = 'LecturerLogin.php';
+            return;
+        }
+
+        let currentCell;
+        let currentScheduleId;
+
+        function formatTimeWithoutSeconds(timeString) {
+            if (timeString && timeString.length >= 5) {
+                return timeString.slice(0, 5); // Extracts HH:MM
+            }
+            return timeString; // Return original if format is unexpected
+        }
+
+        function loadSchedule() {
+            const lecturerId = localStorage.getItem('lecturer_id');
+            const sessionId = localStorage.getItem('session_id');
+            console.log("loadSchedule called. Lecturer ID:", lecturerId, "Session ID:", sessionId);
+
+
+            $.ajax({
+                url: "http://localhost/Appointments/get_schedule.php",
+                method: "GET",
+                xhrFields: {
+                    withCredentials: true
+                },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Lecturer-ID': lecturerId,
+                    'X-Session-ID': sessionId
+                },
+                crossDomain: true,
+                data: {
+                    lecturer_id: lecturerId,
+                    session_id: sessionId
+                },
+                success: function(response) {
+                    console.log("get_schedule success:", response);
+                    let tableBody = $("#scheduleTable");
+                    tableBody.empty();
+
+                    if (typeof response === 'string') {
+                        response = JSON.parse(response);
+                    }
+
+                    if (response && response.data && response.data.length > 0) {
+                        // Sorting the schedule data
+                        const dayOrder = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+                        response.data.sort((a, b) => {
+                            return dayOrder.indexOf(a.days) - dayOrder.indexOf(b.days);
+                        });
+
+                        response.data.forEach(schedule => {
+                            const durationText = calculateDuration(schedule.start_time, schedule.end_time);
+                            let row = `<tr data-schedule-id="${schedule.id}">
+                                            <td>${schedule.days}</td>
+                                            <td class="editable" data-field="start_time">${schedule.start_time}</td>
+                                            <td class="editable" data-field="end_time">${schedule.end_time}</td>
+                                            <td data-field="meeting_duration">${durationText}</td>
+                                        </tr>`;
+                            tableBody.append(row);
+                        });
+                    } else if (response.error) {
+                        tableBody.append("<tr><td colspan='4' class='text-center'>" + response.error + "</td></tr>");
+                    } else {
+                        tableBody.append("<tr><td colspan='4' class='text-center'>No schedule available</td></tr>");
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.log("get_schedule AJAX Error:", {
+                        status: status,
+                        error: error,
+                        response: xhr.responseText
+                    });
+                }
+            });
+        }
+
+        $("#scheduleTable").on('click', '.editable', function(event) {
+            currentCell = $(this);
+            currentScheduleId = $(this).closest('tr').data('schedule-id');
+            const field = $(this).data('field');
+            const currentText = $(this).text();
+            const rect = this.getBoundingClientRect();
+
+            console.log("Editable cell clicked. Schedule ID:", currentScheduleId, "Field:", field);
+
+            $('#editForm').show();
+            $('#editForm').css({
+                left: rect.left + 'px',
+                top: rect.bottom + 'px'
+            });
+
+            if (field === 'start_time' || field === 'end_time') {
+                $('#editTime').val(currentText);
+                $('#editDuration').hide();
+            } else {
                 $('#editForm').hide();
-                loadSchedule();
-            },
-            error: function(xhr, status, error) {
-                console.log("update_schedule AJAX Error:", {
-                    status: status,
-                    error: error,
-                    response: xhr.responseText
-                });
             }
         });
-    });
 
-    $('#cancelEdit').click(function() {
-        $('#editForm').hide();
-    });
+        $('#saveEdit').click(function() {
+            const field = currentCell.data('field');
+            let newValue;
 
-    $("#availabilityForm").submit(function(e) {
-        e.preventDefault();
-        let formData = $(this).serialize();
-        formData += '&lecturer_id=' + localStorage.getItem('lecturer_id');
+            if (field === 'start_time' || field === 'end_time') {
+                newValue = $('#editTime').val();
+            }
 
-        $.ajax({
-            url: "http://localhost/Appointments/set_lecturer_availability.php",
-            method: "POST",
-            data: formData,
-            xhrFields: {
-                withCredentials: true
-            },
-            headers: {
-                'X-Lecturer-ID': localStorage.getItem('lecturer_id'),
-                'X-Session-ID': localStorage.getItem('session_id')
-            },
-            success: function(response) {
-                console.log("set_lecturer_availability success:", response);
-                alert(response.message);
-                $('input[type="checkbox"]').prop('checked', false);
-                $('#start_time').val('');
-                $('#end_time').val('');
-                $('#meeting_duration').val('15');
-                loadSchedule();
-            },
-            dataType: "json"
+            console.log("Save Edit clicked. Schedule ID:", currentScheduleId, "Field:", field, "New Value:", newValue);
+
+            $.ajax({
+                url: "http://localhost/Appointments/update_schedule.php",
+                method: "POST",
+                data: {
+                    schedule_id: currentScheduleId,
+                    field: field,
+                    value: newValue
+                },
+                xhrFields: {
+                    withCredentials: true
+                },
+                headers: {
+                    'X-Lecturer-ID': localStorage.getItem('lecturer_id'),
+                    'X-Session-ID': localStorage.getItem('session_id')
+                },
+                success: function(response) {
+                    console.log("update_schedule success:", response);
+                    $('#editForm').hide();
+                    loadSchedule(); // Reload the whole schedule to update duration
+                },
+                error: function(xhr, status, error) {
+                    console.log("update_schedule AJAX Error:", {
+                        status: status,
+                        error: error,
+                        response: xhr.responseText
+                    });
+                }
+            });
         });
-    });
 
-    loadSchedule();
-});
-    </script>
+        $('#cancelEdit').click(function() {
+            $('#editForm').hide();
+        });
+
+        $("#availabilityForm").submit(function(e) {
+            e.preventDefault();
+            let formData = $(this).serialize();
+            formData += '&lecturer_id=' + localStorage.getItem('lecturer_id');
+            formData += '&meeting_duration=' + $("#meeting_duration").val().split(' ')[0]; // Send calculated duration
+
+            $.ajax({
+                url: "http://localhost/Appointments/set_lecturer_availability.php",
+                method: "POST",
+                data: formData,
+                xhrFields: {
+                    withCredentials: true
+                },
+                headers: {
+                    'X-Lecturer-ID': localStorage.getItem('lecturer_id'),
+                    'X-Session-ID': localStorage.getItem('session_id')
+                },
+                success: function(response) {
+                    console.log("set_lecturer_availability success:", response);
+                    alert(response.message);
+                    $('input[type="checkbox"]').prop('checked', false);
+                    $('#start_time').val('');
+                    $('#end_time').val('');
+                    $('#meeting_duration').val(''); // Clear calculated duration after save
+                    loadSchedule();
+                },
+                dataType: "json"
+            });
+        });
+
+        loadSchedule();
+    });
+</script>
     </body>
     </html>

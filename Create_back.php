@@ -41,6 +41,36 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         exit();
     }
 
+    // Retrieve the lecturer's available time for the specific day of the week
+    $day_of_week = date("l", strtotime($appointment_date)); // Get the day of the week (e.g., "Monday")
+    $stmt_get_schedule = $conn->prepare("SELECT start_time, end_time FROM lecturer_schedule WHERE lecturer_id = ? AND days = ?");
+    $stmt_get_schedule->bind_param("ss", $lecturer, $day_of_week);
+    $stmt_get_schedule->execute();
+    $stmt_get_schedule->store_result();
+
+    if ($stmt_get_schedule->num_rows === 0) {
+        echo json_encode(["status" => "error", "message" => "Lecturer's schedule for the selected day not found."]);
+        exit();
+    }
+
+    $stmt_get_schedule->bind_result($start_time, $end_time);
+    $stmt_get_schedule->fetch();
+    $stmt_get_schedule->close();
+
+    // Convert times to timestamp for comparison
+    $appointment_time = strtotime($time_of_appointment);  // Requested appointment start time
+    $end_time = strtotime($end_time);  // Lecturer's end time
+
+    // Calculate the end time of the appointment (30 minutes later)
+    $appointment_end_time = strtotime('+30 minutes', $appointment_time);
+
+    // Check if the appointment's end time exceeds the lecturer's available end time
+    if ($appointment_end_time > $end_time) {
+        echo json_encode(["status" => "error", "message" => "Appointment time exceeds the lecturer's available time."]);
+        exit();
+    }
+
+
     $date_part = date("Ymd");
     $result = $conn->query("SELECT MAX(SUBSTRING(Appointment_ID, -4)) as max_num FROM appoint WHERE Appointment_ID LIKE 'APPT-$date_part-%'");
     $row = $result->fetch_assoc();
@@ -73,10 +103,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
     if ($stmt->execute()) {
         error_log("Appointment Created Successfully. Appointment ID: " . $appointment_id);
-    
+
         // Get the day of the week for the appointment
         $day_of_week = date("l", strtotime($appointment_date)); // e.g., "Monday"
-    
+
         // Update the lecturer's schedule start_time by adding 20 minutes
         $update_schedule_query = "
             UPDATE lecturer_schedule 
@@ -95,7 +125,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         } else {
             error_log("Error preparing lecturer schedule update query: " . $conn->error);
         }
-    
+
         echo json_encode([
             "status" => "success",
             "message" => "Appointment created successfully",

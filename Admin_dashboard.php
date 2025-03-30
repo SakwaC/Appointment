@@ -345,7 +345,7 @@ function showAllFeedback() {
 
 function generateStudentsByDepartmentReport() {
     const school = document.getElementById('school').value;
-    const department = document.getElementById('department').value;
+    const department = document.getElementById('schoolDepartment').value;
     const startDate = document.getElementById('schoolStartDate').value;
     const endDate = document.getElementById('schoolEndDate').value;
     const reportArea = document.getElementById('schoolDepartmentReportArea');
