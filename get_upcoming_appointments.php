@@ -5,7 +5,7 @@ if (session_status() == PHP_SESSION_NONE) {
 
 
 // Set CORS headers
-header('Access-Control-Allow-Origin: http://localhost:3000'); // Corrected origin
+header('Access-Control-Allow-Origin: http://localhost:3000'); 
 header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Headers: Content-Type, X-Session-ID, X-Student-ID, PHPSESSID');
 header('Access-Control-Allow-Methods: GET, OPTIONS');

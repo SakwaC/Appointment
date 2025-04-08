@@ -75,7 +75,7 @@ if ($result->num_rows > 0) {
         echo json_encode([
             "status" => "success",
             "redirect" => "Dashboard.php",
-            "student_id" => $studentID, // Corrected key name
+            "student_id" => $studentID, 
             "session_id" => $sessionID
         ]);
     } else {

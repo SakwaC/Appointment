@@ -1,12 +1,12 @@
 <?php
 // fetch_students_by_department.php
 
-// Include your database connection file
+// Include  database connection file
 include 'db2_connect.php';
 require_once 'TCPDF-main/tcpdf.php';
 
 session_start();
-$generatedBy = $_SESSION['name'] ?? 'System'; // Get logged-in user's name
+$generatedBy = $_SESSION['name'] ?? 'System'; 
 
 // Retrieve parameters from the GET request
 $school = $_GET['school'] ?? '';

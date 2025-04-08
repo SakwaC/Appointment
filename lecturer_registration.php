@@ -183,7 +183,7 @@
                 $('.error-message').remove();
             });
     
-            // Password input now allows any character (no removal of non-numeric)
+           
             // Password strength evaluation
             $('#password').on('input', function() {
                 let password = $(this).val();

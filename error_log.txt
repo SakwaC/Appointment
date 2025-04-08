@@ -114,3 +114,4 @@ Stack trace:
 #0 C:\Users\pc\Downloads\downloads\htdocs\Appointments\generate_report.php(61): mysqli_stmt->bind_param('sss', 'J31/7103/2021', '2025-03-16', '2025-04-01')
 #1 {main}
   thrown in C:\Users\pc\Downloads\downloads\htdocs\Appointments\generate_report.php on line 61
+[31-Mar-2025 04:41:15 Europe/Berlin] No appointments found for Student ID: A31/1010/2022 between 2025-03-23 and 2025-04-03
